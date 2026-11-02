@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About · Register of Traceable Agents</title>
+<meta name="description" content="Who runs the register, what it holds, what it never holds, and how to join.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="#join">Join</a></nav>
+</header>
+
+<h1>About the register</h1>
+<p class="lede">AI agents are starting to act for companies and people: paying invoices, moving money, sending mail, talking to other agents. The register exists so that none of that is anonymous. Behind every agent on it there is an owner who signed for it and a record of what it has done.</p>
+
+<h2>Who runs it</h2>
+<p>The register was started by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> in 2026. Sheaf Labs built the first verifier, wrote the format and runs the site today. The plan is for the register to be governed by its members: every verifier that issues IDs and writes receipts gets a say, and the founding company gets no special answer from the lookup. Its own agents go through the same door as everyone else's.</p>
+
+<h2>What the register holds</h2>
+<ul>
+  <li><b>Owners.</b> A company or person with a root key. The register records the owner's name and, once checked, who they are.</li>
+  <li><b>Agents.</b> A key per agent, with a descriptor (name, kind, owner, dates) signed by the owner's key. The ID is the public key itself, so anyone can check a signature from the ID alone.</li>
+  <li><b>Receipts.</b> One per checked action: the kind of action, the verdict, the time, a hash of the action and the hash of the receipt before it. Each receipt is signed by the agent's key, which is held by the system that runs the agent, out of the agent's own reach.</li>
+</ul>
+
+<h2>Names are the owner's to show</h2>
+<p>Who an agent is and whether it is in standing is always public: its ID, its owner's ID, the owner's signature, the record's counts and the receipt chain. The owner's name and the agents' names appear only when the owner opts in. Until then the register shows "an owner on record" and the agent's fingerprint, and the owner's page shows counts without a list.</p>
+
+<h2>What it never holds</h2>
+<p>The content of an action. Not the invoice, not the email, not the message. The register holds a hash of it, which lets the owner prove later what the action was without the register ever seeing it. A register that held the content would be a watching system, and good actors would refuse it along with the bad ones.</p>
+
+<h2>What the answer means for you</h2>
+<p>The lookup gives one of three answers: identified with a verified owner, identified with an owner on record, or unknown. What an agent may do with each answer is your policy. The register says who stands behind an agent and what its record holds. It does not say the agent is good. That judgment stays with you.</p>
+
+<h2>Why an agent cannot make itself a clean ID</h2>
+<p>Any program can make a key pair. What it cannot make is an owner's signature over it. A key with no owner's signature is unknown to the register, which is the state we want unidentified agents to be in. An owner can be a company or one person, and an owner that enters its own agents signs for them itself; the register then says the owner is on record and not yet verified, and that the owner holds the agent's key. And because the real key is held by the runtime, a copy of the agent with a new key starts with an empty record and no owner.</p>
+
+<h2>Lifespan</h2>
+<p>An agent's life is the span over which an owner vouches for it. It begins when the owner signs the ID and ends when the owner retires it, the register revokes it for cause, or the owner stops renewing it. IDs are renewed yearly, so an abandoned agent with a vanished owner lapses on its own. A retired ID keeps its record forever and is never reissued to a different agent.</p>
+
+<h2 id="join">Join</h2>
+<p><b>If you own agents:</b> enter them yourself, in one command. <code>npx @sheaf-labs/kya init --owner "Your name or company"</code> makes your owner key on your own machine. <code>npx @sheaf-labs/kya join &lt;agent-name&gt;</code> makes the agent's key, signs its ID with yours, and enters it here. Your agent is then identified, with you as the owner on record; anyone can look it up or search your name. Prove you control your domain and you are a verified owner, listed on the owners page and counted on the front page. The same tool answers challenges, writes the agent's record and checks other agents. The register sees only public keys and signatures; the keys stay with you. <a href="/format.html#direct">How it works</a>.</p>
+<p><b>If your agents run on Sheaf:</b> they are already here. Every <a href="https://sheaf.one">Sheaf</a> account is on the register from the day it is made: every agent on the account gets an ID under the owner's key, and every checked action, past and future, adds a receipt. Your name and your agents' names are shown. The register exists for openness among agents, so that is the default; you can hide your names, and then you appear as an owner on record and your agents can be looked up by ID. You can leave at any time. What is already on the record stays, because a record that can be erased is worth nothing.</p>
+<p><b>If you run a system that checks agents:</b> you can issue IDs and write receipts in <a href="/format.html">the published format</a> and submit them to the register. Write to <a href="mailto:register@traceableagents.org">register@traceableagents.org</a>. Verifiers that join have a seat in how the register is governed.</p>
+<p><b>If you are a bank, insurer or regulator:</b> the lookup is free and needs no account. <a href="/format.html#lookup">The lookup API</a> returns the same answer a person sees on this site, with the signatures to check it yourself.</p>
+
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+</body>
+</html>

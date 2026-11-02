@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Record of Action · Register of Traceable Agents</title>
+<meta name="description" content="Who owns this AI agent, whether it is in good standing, and its Record of Action.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a></nav>
+</header>
+
+<form class="row" id="f" style="margin-top:26px">
+  <input type="text" id="q" placeholder="Agent ID" autocomplete="off">
+  <button type="submit" class="ghost">Look up another</button>
+</form>
+
+<div id="out"><p class="note" style="margin-top:28px">Looking it up…</p></div>
+
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+<script>
+const out = document.getElementById("out");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const when = iso => { if (!iso) return "–"; const d = new Date(String(iso).replace(" ", "T")); return isNaN(d) ? esc(iso) : d.toLocaleString(undefined, {dateStyle:"medium", timeStyle:"short"}); };
+function idFromUrl() {
+  const m = location.pathname.match(/^\/a\/(.+)$/);
+  if (m) return decodeURIComponent(m[1]);
+  return new URLSearchParams(location.search).get("id") || "";
+}
+document.getElementById("f").addEventListener("submit", e => { e.preventDefault(); const v = document.getElementById("q").value.trim(); if (v) location.href = "/a/" + encodeURIComponent(v); });
+
+const kindWords = { agent_retired: "retired by its owner", agent_revoked: "revoked by its owner", held: "held for a person", released: "released by a person", rejected: "rejected by a person", run_started: "run started",
+  run_transition: "run changed state", hosted_run: "run finished", admit_refused: "refused entry", spawn_refused: "sub-agent refused by a limit", counterparty_check: "checked another agent", identity_proved: "proved its identity to another agent", register_joined: "owner joined the register", memory_write: "wrote to memory", proxy: "checked at the proxy",
+  pod_run: "panel asked", logic_gate: "rules checked", measure: "measured", replay: "replayed", agent_issued: "issued a child agent",
+  register_joined: "owner joined the register", register_left: "owner left the register" };
+const kindPill = k => k === "held" ? "warn" : (k === "rejected" || k === "admit_refused") ? "bad" : (k === "released") ? "" : "dim";
+
+async function load() {
+  const id = idFromUrl();
+  if (!id) { out.innerHTML = '<p class="note" style="margin-top:28px">No ID given. <a href="/">Back to the register.</a></p>'; return; }
+  document.getElementById("q").value = id;
+  let d;
+  try { d = await (await fetch("/api/v1/register/lookup?id=" + encodeURIComponent(id))).json(); }
+  catch (e) { out.innerHTML = '<div class="status bad">The register did not answer.<small>Try again in a moment.</small></div>'; return; }
+  if (!d || d.status === "unknown") {
+    document.title = "Unknown agent · Traceable Agents";
+    out.innerHTML = '<div class="status bad">Unknown<small>No agent with this ID is on the register. Treat it as anonymous.</small></div>' +
+      '<p class="mono note">' + esc(id) + '</p>' +
+      '<p>If this is your agent, <a href="/about.html#join">here is how it gets an ID</a>.</p>';
+    return;
+  }
+  const a = d.agent, o = d.owner, r = d.record, p = d.proof;
+  const good = a.standing === "good";
+  const cls = !good ? "bad" : (o && o.verification === "verified") ? "good" : "warn";
+  document.title = esc(a.name) + " · Traceable Agents";
+  const proofText = o => { const p = (o && o.proof) || {}; const bits = []; if (p.domain) bits.push("controls " + p.domain); else if ((p.kinds || []).indexOf("domain") >= 0) bits.push("controls its domain"); if (p.company) bits.push("Companies House: " + p.company.name + " (" + p.company.number + ")"); else if ((p.kinds || []).indexOf("company") >= 0) bits.push("a company entry on record"); if (p.reviewed) bits.push("reviewed by the register"); return bits.join("; "); };
+  const ownerLine = o ? (o.verification === "verified" ? "Owner verified" + (proofText(o) ? " (" + proofText(o) + ")." : ".") : o.verification === "email" ? "Owner on record with a confirmed email address, not yet verified." : "Owner on record, not yet verified.") : "No owner on record.";
+  const tierLabel = t => t === "verified" ? "verified" : t === "email" ? "email confirmed" : "unverified";
+  let h = '<div class="status ' + cls + '">' + esc(d.answer) + '<small>' + esc(a.standingNote) + '</small></div>';
+
+  h = '<h1>Extract of entry <span class="mono" style="font-size:22px">' + esc(a.fingerprint).toUpperCase() + '</span></h1><p class="note">Issued by the register on request. Everything in it can be checked from the public keys alone.</p>' + h;
+  h += '<h2>1. The agent</h2><div class="card"><dl>' +
+    '<dt>Name</dt><dd>' + esc(a.name) + ' <span class="note">(' + esc(a.kind) + ')</span></dd>' +
+    '<dt>Environment</dt><dd>' + (a.environment === "production" ? 'Production' : '<span class="pill warn">test</span> <span class="note">Marked a test agent by its owner when issued. Treated like any other; it says what it is.</span>') + '</dd>' +
+    '<dt>ID</dt><dd class="mono">' + esc(a.fingerprint) + '</dd>' +
+    '<dt>Full ID</dt><dd class="mono" style="word-break:break-all">' + esc(a.id) + ' <span class="note">(the agent\'s public key; the ID above is its short form)</span></dd>' +
+    '<dt>Issued through</dt><dd>' + esc((a.issuedThrough || {}).name || 'Sheaf') + ((a.issuedThrough && a.issuedThrough.approved === false) ? ' <span class="note">(a verifier the register has not yet approved; this entry is not in the public counts)</span>' : '') + '</dd>' +
+    '<dt>Standing</dt><dd><span class="pill ' + (good ? "" : "bad") + '">' + esc(a.standing) + '</span>' + (a.statusReason ? ' <span class="note">' + esc(a.statusReason) + '</span>' : '') + '</dd>' +
+    '<dt>Issued</dt><dd>' + when(a.issuedAt) + '</dd>' +
+    '<dt>Renew by</dt><dd>' + when(a.expiresAt) + '</dd>' +
+    '</dl></div>';
+
+  h += '<h2>2. The owner</h2><div class="card">' + (o ? '<dl>' +
+    '<dt>Name</dt><dd>' + esc(o.name) + '</dd>' +
+    '<dt>Verification</dt><dd><span class="pill ' + (o.verification === "verified" ? "" : "warn") + '">' + esc(tierLabel(o.verification)) + '</span> <span class="note">' + esc(ownerLine) + '</span></dd>' +
+    '<dt>Owner ID</dt><dd class="mono">' + esc(o.id) + '</dd>' +
+    '<dt>On the register since</dt><dd>' + when(o.since) + '</dd>' +
+    '<dt>Agents issued</dt><dd>' + esc(o.agentsIssued) + ' <a class="note" href="/o/' + encodeURIComponent(o.id) + '">see the owner\'s list</a></dd>' +
+    '</dl>' : '<p class="note">No owner has signed for this agent.</p>') + '</div>';
+
+  const L = d.lineage || {};
+  const link = x => '<a href="/a/' + encodeURIComponent(x.fingerprint) + '">' + esc(x.name) + '</a> <span class="mono note">' + esc(x.fingerprint) + '</span>' + (x.status !== "issued" ? ' <span class="pill bad">' + esc(x.status) + '</span>' : '');
+  h += '<h2>3. Lineage</h2><div class="card">' + (!L.parent && !(L.children || []).length
+    ? '<p class="note" style="margin:0">A root agent: issued directly by its owner, and it has issued no agents of its own.</p>'
+    : '<dl>' +
+      '<dt>Parent</dt><dd>' + (L.parent ? link(L.parent) : 'None. This is a root agent.') + '</dd>' +
+      (L.ancestors && L.ancestors.length > 1 ? '<dt>Line to the root</dt><dd>' + L.ancestors.slice().reverse().map(link).join(' → ') + ' → <b>' + esc(a.name) + '</b></dd>' : '') +
+      '<dt>Depth</dt><dd>' + esc(L.depth || 0) + (L.depth ? ' below the root' : ', the root') + '</dd>' +
+      '<dt>Agents it issued</dt><dd>' + ((L.children || []).length ? (L.children || []).map(link).join('<br>') : 'None') + '</dd>' +
+      '</dl><p class="note" style="margin:12px 0 0">A child\'s ID is signed by its owner and by its parent\'s key. If an ancestor is revoked, retired or lapses, every agent below it is out of standing with it.</p>') + '</div>';
+  const R = d.recordOfAction || {};
+  const scoreBox = R.score == null ? '<div class="stat"><b>–</b><span>Record Score</span></div>' : '<div class="stat"><b>' + esc(R.score) + '</b><span>Record Score · ' + esc(R.scoreWords) + '</span></div>';
+  h += '<h2>4. Record of Action</h2>' +
+    '<div class="status ' + (R.score == null ? 'warn' : R.score >= 75 ? 'good' : R.score >= 50 ? 'warn' : 'bad') + '" style="font-size:17px">' + esc(R.story || "") + '</div>' +
+    '<div class="grid">' + scoreBox +
+    '<div class="stat"><b>' + esc(R.actions) + '</b><span>actions on record</span></div>' +
+    '<div class="stat"><b>' + esc(R.held) + '</b><span>held for a person</span></div>' +
+    '<div class="stat"><b>' + esc(R.rejected) + '</b><span>rejected by a person</span></div></div>' +
+    '<div class="card"><dl>' +
+    '<dt>Last 90 days</dt><dd>' + esc((R.last90||{}).actions) + ' actions, ' + esc((R.last90||{}).held) + ' held, ' + esc((R.last90||{}).rejected) + ' rejected</dd>' +
+    '<dt>Released after a hold</dt><dd>' + esc(R.released) + '</dd>' +
+    '<dt>Last rejected</dt><dd>' + when(R.lastRejectedAt) + '</dd>' +
+    '<dt>Sub-agents it started</dt><dd>' + esc(R.subAgents) + '</dd>' +
+    '<dt>Other agents it checked</dt><dd>' + esc(R.checksOfOthers) + '</dd>' +
+    '<dt>Identity proofs it gave</dt><dd>' + esc(R.proofsGiven) + '</dd>' +
+    '<dt>Runs</dt><dd>' + esc(R.runs) + '</dd>' +
+    '<dt>First seen</dt><dd>' + when(R.firstAt) + '</dd>' +
+    '<dt>Last seen</dt><dd>' + when(R.lastAt) + '</dd>' +
+    '<dt>Chain head</dt><dd class="mono">' + (R.headHash ? esc(R.headSeq) + ' · ' + esc(R.headHash) : 'no receipts yet') + '</dd>' +
+    '</dl></div>' +
+    '<p class="note">The Record Score is computed from the receipts alone, by a published formula: ' + esc(R.scoreFormula || "") + '. Anyone can recompute it.</p>' +
+    '<div id="timeline"></div>';
+
+  h += '<div class="row" style="margin:14px 0"><button id="verify" class="ghost">Check every signature</button><span id="vout" class="note" style="align-self:center"></span></div>';
+  h += '<div id="receipts"></div>';
+
+  const C = d.checkpoint;
+  h += '<h2>5. Public checkpoint</h2><div class="card">' + (C
+    ? '<p style="margin:0 0 8px">' + esc(C.words) + '</p><p class="note" style="margin:0">Root ' + '<span class="mono">' + esc(String(C.root).slice(0, 24)) + '…</span>' +
+      ' · <a href="/api/v1/register/checkpoints/' + esc(C.seq) + '">the checkpoint</a> · <a href="/api/v1/register/agents/' + encodeURIComponent(a.fingerprint) + '/checkpoint">the path from this agent to the root</a>' +
+      (C.status === 'confirmed' || C.status === 'pending' ? ' · <a href="' + esc(C.proofUrl) + '">the Bitcoin proof</a>' : '') + '</p>'
+    : '<p class="note" style="margin:0">No checkpoint covers this agent yet. The register takes one every hour that anything moves; the next will include this agent once it has a receipt.</p>') +
+    '<p class="note" style="margin:8px 0 0">Once an hour the register folds the head of every agent\'s chain into one hash and writes it into Bitcoin. A receipt under a checkpoint cannot be changed afterwards by anyone, the register included, without the published hash ceasing to match.</p></div>';
+  h += '<details><summary>6. Proof</summary>' +
+    '<p class="note">Everything above can be checked without trusting this site. The owner\'s key signed the descriptor; the agent\'s key signed each receipt; each receipt names the one before it.</p>' +
+    '<h3>Descriptor, signed by the owner</h3><pre>' + esc(JSON.stringify(p.descriptor, null, 2)) + '</pre>' +
+    '<dl><dt>Owner signature</dt><dd class="mono">' + esc(p.ownerSignature) + '</dd>' +
+    (p.parentSignature ? '<dt>Parent signature</dt><dd class="mono">' + esc(p.parentSignature) + '</dd>' : '') +
+    '<dt>Owner public key</dt><dd class="mono">' + esc(p.ownerPublicKey || "–") + '</dd>' +
+    '<dt>Agent public key</dt><dd class="mono">' + esc(p.agentPublicKey) + '</dd>' +
+    '<dt>Algorithms</dt><dd>' + esc(p.signatureAlgorithm) + ' signatures, ' + esc(p.hashAlgorithm) + ' hashes</dd></dl>' +
+    '<p class="note" style="margin-top:10px">Raw: <a href="/api/v1/register/lookup?id=' + encodeURIComponent(a.id) + '">lookup</a> · <a href="/api/v1/register/agents/' + encodeURIComponent(a.fingerprint) + '/receipts">receipts</a> · <a href="/api/v1/register/agents/' + encodeURIComponent(a.fingerprint) + '/verify">verify</a> · <a href="/format.html">the format</a></p>' +
+    '</details>';
+  out.innerHTML = h;
+
+  document.getElementById("verify").addEventListener("click", async () => {
+    const vo = document.getElementById("vout"); vo.textContent = "Checking…";
+    try {
+      const v = await (await fetch("/api/v1/register/agents/" + encodeURIComponent(a.fingerprint) + "/verify")).json();
+      vo.textContent = v.ok ? "All good: the owner's signature" + (v.parentSigned ? ", the parent's signature" : "") + " and " + v.receiptsChecked + " receipt(s) check out." : "Problem: " + (v.problems || []).join("; ");
+    } catch (e) { vo.textContent = "Could not check right now."; }
+  });
+
+  try {
+    const rec = await (await fetch("/api/v1/register/agents/" + encodeURIComponent(a.fingerprint) + "/record")).json();
+    const tl = rec.timeline || [];
+    if (tl.length) {
+      const days = {}; const order = [];
+      for (const x of tl) { if (!days[x.day]) { days[x.day] = {}; order.push(x.day); } days[x.day][x.kind] = (days[x.day][x.kind] || 0) + x.count; }
+      document.getElementById("timeline").innerHTML = '<h3>The last 30 days</h3><div class="card" style="padding:6px 12px"><table><thead><tr><th>Day</th><th>What happened</th></tr></thead><tbody>' +
+        order.slice().reverse().map(day => '<tr><td>' + esc(day) + '</td><td>' + Object.entries(days[day]).map(([k, n]) => n + ' × <span class="pill ' + kindPill(k) + '">' + esc(kindWords[k] || k) + '</span>').join(', ') + '</td></tr>').join("") + '</tbody></table></div>';
+    }
+  } catch (e) {}
+  try {
+    const rs = await (await fetch("/api/v1/register/agents/" + encodeURIComponent(a.fingerprint) + "/receipts?limit=50")).json();
+    const list = rs.receipts || [];
+    document.getElementById("receipts").innerHTML = !list.length ? '<p class="note">No receipts yet. They appear as the agent acts.</p>' :
+      '<h3>Receipts, most recent first</h3><div class="card" style="padding:6px 12px"><table><thead><tr><th>#</th><th>When</th><th>What</th><th>Verdict</th><th>Hash</th></tr></thead><tbody>' +
+      list.map(x => '<tr><td class="mono">' + esc(x.seq) + '</td><td>' + when(x.at) + '</td><td><span class="pill ' + kindPill(x.kind) + '">' + esc(kindWords[x.kind] || x.kind) + '</span></td><td>' + esc(x.decision) + '</td><td class="mono" title="' + esc(x.hash) + '">' + esc(String(x.hash).slice(0, 12)) + '…</td></tr>').join("") +
+      '</tbody></table></div><p class="note">The register holds the hash of each action, never its content. The content stays with the owner.</p>';
+  } catch (e) {}
+}
+load();
+</script>
+</body>
+</html>

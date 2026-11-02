@@ -1,0 +1,17 @@
+# Publishes @sheaf-labs/kya to npm with trusted publishing (no token). On npmjs.com, the package's
+# settings name this repository and this workflow file as its trusted publisher.
+name: Publish kya
+on:
+  push:
+    tags: ['kya-v*']
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, registry-url: https://registry.npmjs.org }
+      - run: npm install -g npm@latest
+      - run: node spec/vectors/verify.mjs
+      - run: cd clients/kya && npm publish --access public --provenance

@@ -46,6 +46,17 @@ parent's signature, a three-receipt chain, a valid proof and two invalid ones, a
 and Record Score cases. An implementation that recomputes the same hashes and accepts and rejects the same
 signatures speaks the format.
 
+## Run your own register
+
+```sh
+cd server && docker compose up
+```
+
+[`server/`](server/) is the register itself: Scala, PostgreSQL, one `docker compose up`. Set
+`REGISTER_PEERS=https://traceableagents.org` and it answers for the public register's agents too, after
+checking every signature itself. Registers that speak the format look each other up; see
+[the format](spec/format.md#registers-that-talk-to-each-other) and [GOVERNANCE.md](GOVERNANCE.md).
+
 ## For systems that run agents
 
 A platform that runs agents for its customers and holds their keys issues IDs and writes receipts itself,

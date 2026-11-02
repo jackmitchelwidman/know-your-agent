@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The format · Register of Traceable Agents</title>
+<meta name="description" content="The ID, descriptor, receipt and lookup formats of the register, version 1.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="/about.html#join">Join</a></nav>
+</header>
+
+<h1>The format, version 1</h1>
+<p class="lede">Four things: an ID, a descriptor the owner signs, a receipt the agent signs, and a lookup anyone can call. Everything is plain JSON and standard cryptography, so a verifier can check a record without talking to this site.</p>
+
+<h2>The ID</h2>
+<p>An agent's ID is its Ed25519 public key, written as a W3C <code>did:key</code>: the two multicodec bytes <code>0xed 0x01</code>, then the 32 key bytes, base58btc encoded with the multibase prefix <code>z</code>.</p>
+<pre>did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK</pre>
+<p>The short form people read is the <b>fingerprint</b>: the first 16 hex characters of sha256 over the 32 key bytes. The lookup accepts either.</p>
+<p>Owners have an ID of the same shape. An agent built on the Agent Passport System (APS) or holding any Ed25519 DID can keep its key: the register binds the record to the key itself, whoever issued it.</p>
+
+<h2>The descriptor</h2>
+<p>What the owner signs. Canonical JSON: keys sorted, no whitespace (RFC 8785 style). The signature is Ed25519 over the UTF-8 bytes of that text, by the owner's key.</p>
+<pre>{"expiresAt":"2027-10-18T00:12:09Z","id":"did:key:z6Mk…agent","issuedAt":"2026-10-18T00:12:09Z",
+ "kind":"agent","name":"turkey-news-emailer","owner":"did:key:z6Mk…owner","type":"traceable-agent","v":1}</pre>
+<p>A descriptor with a valid owner signature makes the agent <b>identified</b>. Changing the agent's name or kind is an event in the record, never a new ID.</p>
+
+<h2>Production or test</h2>
+<p>Every descriptor carries <code>environment</code>: <code>production</code> or <code>test</code>, chosen by the owner when the ID is issued and fixed from then on, because it is inside what the owner signed. A test agent is a full entry: the same ID, the same receipts, the same standing. It simply says what it is, to everyone, forever. A sub-agent takes its parent's environment. An owner whose test agent has done its job retires it: the ID reads <code>retired</code>, the record stays.</p>
+
+<h2>The receipt</h2>
+<p>One per checked action. The receipt commits to a JSON array, canonicalised the same way; the receipt hash is sha256 over those bytes and the agent's key signs the 32 hash bytes.</p>
+<pre>["traceable-receipt", id, seq, at, kind, decision, runId, actionHash, ledgerRowHash, prevHash]</pre>
+<p><code>runId</code> is null for an action the agent took directly with its key, outside a run. Every key is one agent's credential, so such an action is still the agent's.</p>
+<dl>
+  <dt>id</dt><dd>the agent's did:key</dd>
+  <dt>seq</dt><dd>1, 2, 3… per agent, no gaps</dd>
+  <dt>at</dt><dd>when the action was checked, ISO 8601 UTC</dd>
+  <dt>kind, decision</dt><dd>what sort of event and what the verdict was, for example <code>held / hold</code>, <code>released / release</code>, <code>run_started / start</code></dd>
+  <dt>runId</dt><dd>the run the action belonged to, or null</dd>
+  <dt>actionHash</dt><dd>sha256 of the action's subject and input, kept by the owner; null when there was none. The register never holds the content.</dd>
+  <dt>ledgerRowHash</dt><dd>the hash of the verifier's own ledger row, so the receipt can be matched to the verifier's evidence</dd>
+  <dt>prevHash</dt><dd>the hash of the receipt before it; the first receipt names 64 zeros</dd>
+</dl>
+<h2>Lineage</h2>
+<p>An agent made by another agent is a child. Its descriptor carries one more field, <code>parent</code>, the parent's ID, and it is signed twice: by the owner's key and by the parent agent's key. Both signatures are over the same canonical bytes. The parent's key, like every agent key, is held by the verifier that issued it, so the parent's signature says the verifier saw this child issued under that parent. A child made in the course of a run also leaves a receipt on the parent's record. Standing runs down the line: if an ancestor is revoked, retired or lapses, every agent below it is out of standing with it. Lineage is fixed at birth and never changes.</p>
+<p>Because each receipt names the one before it, nothing can be removed or reordered without the chain breaking. The receipt format is compatible in spirit with APS receipts; a verifier that reads those can read these.</p>
+
+<h2 id="lookup">The lookup</h2>
+<p>Free, no account. All responses are JSON and allow cross-origin reads.</p>
+<pre>GET https://traceableagents.org/api/v1/register/lookup?id=&lt;did or fingerprint&gt;
+GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;
+GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;/receipts?limit=50&amp;before=&lt;seq&gt;
+GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;/verify
+GET https://traceableagents.org/api/v1/register/owners/&lt;owner did&gt;
+GET https://traceableagents.org/api/v1/register/stats
+GET https://traceableagents.org/api/v1/register/format</pre>
+<p>The lookup answers with <code>status</code> (<code>identified</code> or <code>unknown</code>), a one-line <code>answer</code>, the agent, the owner with its verification state, the record's counts and chain head, and a <code>proof</code> block with the descriptor, the owner's signature and both public keys. <code>verify</code> recomputes the whole chain on the server and reports any problem; you can do the same yourself from <code>receipts</code>.</p>
+
+<h2 id="handshake">The handshake</h2>
+<p>Before agent A acts for or with agent B, two calls settle who B is and what its record holds.</p>
+<ol class="steps">
+  <li><b>A sends B a challenge.</b> Any fresh random string, used once. B asks its verifier to sign it with B's key: the key stays with the verifier, so B's runtime never holds it. B hands the signed proof back to A.</li>
+  <li><b>A checks the proof and reads the record.</b> One call to the register, with the proof and the challenge A issued. The answer is the lookup above, plus whether the proof is B's.</li>
+</ol>
+<pre>POST https://traceableagents.org/api/v1/register/check
+{"proof": {…the document B gave A…}, "challenge": "…what A sent B…"}
+POST https://traceableagents.org/api/v1/register/check
+{"id": "&lt;did or fingerprint&gt;"}            (a lookup without a proof)</pre>
+<p>The proof is <code>{v:1, type:"traceable-proof", id, challenge, audience?, at}</code> in canonical JSON, signed by the agent key (Ed25519, base64 in <code>signature</code>), good for ten minutes. The answer adds <code>identityProof</code> (<code>checked</code>, <code>valid</code>, <code>reason</code>) and a one-paragraph <code>summary</code> in plain words. What A does with the answer is A's own policy; a verifier that runs A records the check on A's record, so a counterparty check is itself an act the record shows.</p>
+
+<h2 id="record">The Record of Action and the Record Score</h2>
+<p>An agent's Record of Action is its chain of receipts read as a history: how many times it acted through a verifier, how many times a person held it, released it or rejected it, the last 90 days on their own, the sub-agents it started, the other agents it checked before dealing with them, and the identity proofs it gave. <code>GET /api/v1/register/agents/&lt;id&gt;/record</code> returns the numbers, a one-paragraph story in plain words, and a 30-day timeline.</p>
+<p>The <b>Record Score</b> is one number from those receipts, by a formula anyone can recompute: start at 100; subtract 30 times the share of actions that were held; subtract 50 times the share that were rejected; subtract 10 if there was a rejection in the last 90 days; subtract 10 if there are fewer than 20 actions; keep it between 0 and 100. There is no score before the first action. The score is a reading of the record, not a judgement by the register: the receipts behind it are public and the formula will only change with notice on this page.</p>
+
+<h2>Standing</h2>
+<dl>
+  <dt>good</dt><dd>issued, not retired, not revoked, renewal date in the future</dd>
+  <dt>expired</dt><dd>the owner has not renewed; the record stays</dd>
+  <dt>retired</dt><dd>the owner ended the agent's life; the record stays, the ID is never reissued</dd>
+  <dt>revoked</dt><dd>the owner or the register withdrew it for cause; the record stays</dd>
+</dl>
+
+<h2 id="checkpoint">The public checkpoint</h2>
+<p>Once an hour, when anything has moved, the register takes the head of every agent's chain and publishes one hash that commits to all of them. After that, a receipt under the checkpoint cannot be changed by anyone, the keeper of the register included, without the published hash ceasing to match. Anyone who keeps copies of the checkpoints can catch it.</p>
+<dl>
+  <dt>leaf</dt><dd>sha256 of canonical <code>["traceable-checkpoint-leaf", id, headSeq, headHash]</code>, one per agent that has a receipt, sorted by id</dd>
+  <dt>root</dt><dd>a Merkle tree over the leaves: each node is sha256(left ++ right); an odd last node is paired with itself</dd>
+  <dt>statement</dt><dd>canonical <code>{v:1, type:"traceable-checkpoint", at, agents, receipts, root, prevRoot}</code>; each checkpoint names the root before it</dd>
+  <dt>anchor</dt><dd>sha256 of the statement bytes is submitted to OpenTimestamps calendars, which commit it to Bitcoin within a few hours. The proof file is published; <code>ots verify -d &lt;statementHash&gt; checkpoint-&lt;seq&gt;.ots</code> checks it against a Bitcoin node with no trust in this site</dd>
+  <dt>calls</dt><dd><code>GET /api/v1/register/checkpoints</code>, <code>/checkpoints/&lt;seq&gt;</code> (statement and every leaf), <code>/checkpoints/&lt;seq&gt;/proof.ots</code>, and <code>/agents/&lt;id&gt;/checkpoint</code>, which gives the newest checkpoint covering an agent and the path of sibling hashes from its leaf to the root</dd>
+</dl>
+
+<h2 id="direct">Entering your own agents</h2>
+<p>An owner does not need a system in between. One call enters an agent under the owner's own key, and the owner then writes the agent's receipts and standing itself through the calls in the next section, naming its own ID as the <code>verifier</code>.</p>
+<dl>
+  <dt>Join</dt><dd><code>POST /api/v1/register/join</code> with <code>{type:"traceable-join", at, owner:{id, name, website, listed}, agent:{descriptor, ownerSignature, parentSignature}, signature}</code>. The descriptor is exactly the one above, signed by the owner's key; the whole body is signed by the owner's key too. The owner's ID is its did:key. On the first call the owner is recorded; every later call adds another agent under the same owner.</dd>
+  <dt>What the lookup says</dt><dd>Identified, owner on record, not yet verified. The lookup also says the owner issued the ID itself and holds the agent's key, so the agent's receipts are the owner's own report. The agent can be looked up and the owner searched by name at once. An owner that proves its domain (below) becomes verified and from then on appears on the owners page and in the public counts; a system that runs the agent and holds its key out of the owner's reach writes under its own name instead.</dd>
+  <dt>The tool</dt><dd><code>npx @sheaf-labs/kya init --owner "Name"</code> then <code>npx @sheaf-labs/kya join &lt;agent-name&gt;</code>. About two hundred lines of Node with no dependencies; it also answers challenges (<code>prove</code>), checks other agents (<code>check</code>), writes receipts (<code>receipt</code>) and ends an agent's life (<code>retire</code>, <code>revoke</code>). Apache-2.0.</dd>
+</dl>
+
+<h2 id="verifiers">Other systems that issue IDs and write receipts</h2>
+<p>Sheaf is one system that issues IDs and writes receipts. Any other system can do the same, in the format above, through four calls. The register never holds that system's keys. It checks every signature from the public keys and keeps the chain rules, so an entry written this way verifies exactly like one Sheaf wrote, with the same <code>/verify</code> call.</p>
+<p>Every write is one JSON body, signed by the writing system's key over the canonical form of the body without its <code>signature</code> field. Canonical means keys sorted at every level, no whitespace, UTF-8. Each body carries <code>at</code>, the current time, and is accepted for ten minutes.</p>
+<dl>
+  <dt>Register</dt><dd><code>POST /api/v1/register/verifiers</code> with <code>{type:"traceable-verifier", id, name, website, at, signature}</code>. <code>id</code> is the system's did:key. The signature is that key's, which is how the system proves it holds it. The system is then registered. The register approves it separately; until then its entries can be looked up by ID but do not enter the public counts, search or the owners page.</dd>
+  <dt>Entry</dt><dd><code>POST /api/v1/register/entries</code> with <code>{verifier, at, owner:{id, name, listed}, agent:{descriptor, ownerSignature, parentSignature}, signature}</code>. The descriptor is exactly the one above, signed by the owner's key. A child names its parent, who must already be on the register under the same owner, and carries the parent key's signature over the same bytes. An owner can be written to only by the system that brought it.</dd>
+  <dt>Receipts</dt><dd><code>POST /api/v1/register/receipts</code> with <code>{verifier, at, agent, receipts:[…], signature}</code>. Each receipt is <code>{seq, at, kind, decision, runId, actionHash, ledgerRowHash, prevHash, hash, signature}</code>, in chain order. The register recomputes each hash from the preimage above, checks <code>prevHash</code> against its head, and checks the agent key's signature over the hash. One bad receipt refuses the call and nothing after it is written. Sending a receipt again is accepted when it is identical and refused when it is not.</dd>
+  <dt>Standing</dt><dd><code>POST /api/v1/register/entries/status</code> with <code>{verifier, at, agent, status, reason, signature}</code>, status <code>retired</code> or <code>revoked</code>.</dd>
+  <dt>Who issued what</dt><dd><code>GET /api/v1/register/verifiers</code> lists the systems and whether the register has approved them, and how many owners have entered their own agents. Every lookup says which system issued the agent, or that the owner did.</dd>
+</dl>
+<p>A worked client in forty lines of Node, using only the built-in Ed25519, is at <a href="https://github.com/jackmitchelwidman/discursa/tree/main/register/verifier-example">register/verifier-example</a>. It registers a system, writes an owner and an agent, writes two receipts, and calls <code>/verify</code>.</p>
+
+<h2 id="federation">Registers that talk to each other</h2>
+<p>Anyone may run a register from the published server. Registers that speak this format answer each other's lookups, so an agent entered on one can be checked from another. Each register publishes who it is and whom it asks:</p>
+<dl>
+  <dt>Self</dt><dd><code>GET /api/v1/register/self</code> returns <code>{register:{id, name, url}, peers:[…]}</code>. <code>id</code> is the register's own did:key, when it has one.</dd>
+  <dt>The hop</dt><dd>A lookup that finds nothing on this register is asked, once, of each peer: <code>GET &lt;peer&gt;/api/v1/register/lookup?id=…&amp;local=1</code>. The <code>local</code> flag stops the peer from asking its own peers, so a question travels one hop and never loops.</dd>
+  <dt>Trust</dt><dd>A peer can report; it cannot vouch. This register uses a peer's answer only after it has re-checked, from the public keys inside the answer, that <code>ownerSignature</code> is the owner key's over the canonical descriptor and that <code>descriptor.owner</code> is that key. An answer that fails the check is treated as not found. The standing, counts and Record Score in a forwarded answer are the peer's report and are marked as such.</dd>
+  <dt>What the answer says</dt><dd>Every answer carries <code>register:{url, name, id}</code>, the register that holds the entry. A forwarded answer also carries <code>federated:true</code>, <code>verifiedHere:true</code> and <code>askedBy</code>, the register you asked.</dd>
+</dl>
+<p>The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its <code>self</code> and asking the existing operators to list it as a peer. How that is decided is in the <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">governance note</a>.</p>
+
+<h2 id="verification">Owner verification</h2>
+<p>An owner is <b>verified</b> when it has proved control of a domain, or when the register's keeper has reviewed it. The proof of a domain is a token the register gives the owner, placed where only the domain's controller can put it:</p>
+<dl>
+  <dt>A DNS record</dt><dd><code>_traceableagents.&lt;domain&gt;</code> &nbsp;TXT&nbsp; <code>"traceableagents-verify=&lt;token&gt;"</code></dd>
+  <dt>Or a file</dt><dd><code>https://&lt;domain&gt;/.well-known/traceable-agents.txt</code> containing the line <code>traceableagents-verify=&lt;token&gt;</code></dd>
+</dl>
+<p>Beneath verified sits a weaker mark, <b>email confirmed</b>: the owner signed in with a code sent to its email address, so the register knows the address is real and in the owner's hands. It says nothing about who the owner is. The address itself is never shown. An owner with no domain and no company, an individual for instance, carries this mark until it proves a domain or is reviewed.</p>
+<p>An owner that entered its own agents claims and checks its domain with two signed calls: <code>POST /api/v1/register/owners/verify</code> with <code>{type:"traceable-verify", owner, domain, at, signature}</code> returns the token; <code>POST /api/v1/register/owners/verify/check</code> with <code>{type:"traceable-verify-check", owner, at, signature}</code> looks for it. The tool does this as <code>kya verify &lt;domain&gt;</code> and <code>kya verify-check</code>.</p>
+<p>The register checks the record when the owner asks and again every day. A domain whose record disappears keeps its mark for 45 days, then loses it until the record is back. Once a domain is proved, the owner may attach a <b>Companies House</b> entry by number; the register fetches the registered name from Companies House and shows it beside the domain. The domain proof shows the owner controls that domain. The company entry shows which registered company the owner says it is; the two are tied together by the keeper's review, which is the third mark. A lookup says which of the three an owner holds, in the <code>proof</code> field of the owner.</p>
+
+<h2>What is not in version 1</h2>
+<p>Incarnations (a session key per run, including a run restored from a saved context) and yearly renewal. These are designed and come next. The ID and receipt formats above will not change under them.</p>
+
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+</body>
+</html>

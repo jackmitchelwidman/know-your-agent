@@ -1,3 +1,6 @@
 node_modules/
 __pycache__/
 *.key
+server/target/
+server/project/target/
+server/project/project/

@@ -20,9 +20,15 @@ The first command makes your owner key. You sign for your agents with it. The se
 the agent, signs its ID as its owner, and enters it on the register. It prints the agent's ID, its
 fingerprint and the page where anyone can look it up.
 
-The agent is now **identified, owner on record**. To move the owner to **verified**, prove you control
-your domain: the register gives you a token to put in a DNS record or at
-`/.well-known/traceable-agents.txt`. See [owner verification](https://traceableagents.org/format.html#verification).
+The agent is now **identified, owner on record**. Anyone can look it up or find you by name. To become a
+**verified** owner, listed on the owners page and counted on the front page, prove you control your domain:
+
+```sh
+npx @sheaf-labs/kya verify acme.example      # prints a token to put in DNS or at /.well-known/traceable-agents.txt
+npx @sheaf-labs/kya verify-check             # the register looks for it
+```
+
+See [owner verification](https://traceableagents.org/format.html#verification).
 
 ## The handshake
 

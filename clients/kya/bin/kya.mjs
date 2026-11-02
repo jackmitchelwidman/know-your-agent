@@ -79,6 +79,8 @@ const HELP = `kya: Know Your Agent. The Register of Traceable Agents from the co
         payment / approved or email / sent. Three kinds have meaning for the Record Score: held (a person
         stopped it), released (a person let it go), rejected (a person refused it). The register keeps
         a hash of the action, never the text.
+  kya verify <domain>                    Claim your domain: prints the token to put in DNS or on your site.
+  kya verify-check                       Ask the register to look for the token. Passing makes you a verified owner.
   kya retire <agent> [--reason "…"]      End the agent's life. Its record stays.
   kya revoke <agent> [--reason "…"]      Withdraw the agent for cause. Its record stays.
   kya record <agent>                     The agent's Record of Action and Record Score, from the register.
@@ -193,6 +195,25 @@ async function standing(status) {
   out(`${name} is ${r.agent.status}. Its record stays at ${REGISTER}/a/${a.fingerprint}`);
 }
 
+async function verify() {
+  const o = owner(); const domain = rest[0];
+  if (!domain) die("kya verify <domain>: the domain you control, for example acme.example");
+  const r = await post("/api/v1/register/owners/verify", signed(o.key, { type: "traceable-verify", owner: didOf(o.key), domain, at: now() }));
+  const v = r.verification || {}; const tok = v.domainToken || v.token || (v.domain && v.domain.token);
+  out(`Claimed ${domain}. Put this where only the domain's controller can:`);
+  out(`  DNS:  _traceableagents.${domain}  TXT  "traceableagents-verify=${tok}"`);
+  out(`  or:   https://${domain}/.well-known/traceable-agents.txt containing the line traceableagents-verify=${tok}`);
+  out(`Then run: kya verify-check`);
+  if (flags.json) out(r);
+}
+
+async function verifyCheck() {
+  const o = owner();
+  const r = await post("/api/v1/register/owners/verify/check", signed(o.key, { type: "traceable-verify-check", owner: didOf(o.key), at: now() }));
+  out(r.tier === "verified" ? `Verified. You are a verified owner on the register. ${REGISTER}/o/${didOf(o.key)}` : `Not verified yet (${r.tier || "unverified"}).`);
+  if (flags.json) out(r);
+}
+
 async function record() {
   const a = agent(safeName(rest[0]));
   const j = await get(`/api/v1/register/agents/${a.id}/record`);
@@ -201,7 +222,7 @@ async function record() {
   if (flags.json) out(j);
 }
 
-const run = { init, join, whoami, prove, check, challenge, receipt, record, retire: () => standing("retired"), revoke: () => standing("revoked") };
+const run = { init, join, whoami, prove, check, challenge, receipt, record, verify, "verify-check": verifyCheck, retire: () => standing("retired"), revoke: () => standing("revoked") };
 if (!cmd || cmd === "help" || flags.help) { out(HELP); process.exit(0); }
 if (!run[cmd]) die(`Unknown command "${cmd}".\n\n${HELP}`);
 run[cmd]().catch(e => die(e && e.message ? e.message : String(e)));

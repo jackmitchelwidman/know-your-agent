@@ -1,0 +1,24 @@
+# One command: docker compose up. Postgres plus the register on http://localhost:8080.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: register
+      POSTGRES_USER: register
+      POSTGRES_PASSWORD: register
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U register"], interval: 3s, timeout: 3s, retries: 20 }
+  register:
+    build: .
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      DATABASE_URL: postgresql://register:register@db:5432/register
+      PORT: 8080
+      REGISTER_NAME: "My register"
+      REGISTER_SELF_URL: http://localhost:8080
+      # REGISTER_PEERS: https://traceableagents.org
+      # OTS_ENABLED: "true"
+      # COMPANIES_HOUSE_API_KEY: ""
+    ports: ["8080:8080"]
+volumes:
+  pgdata: {}

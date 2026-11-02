@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Owners · Register of Traceable Agents</title>
+<meta name="description" content="Every owner on the register that chose to show its name, with how many agents it has signed for.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a></nav>
+</header>
+<h1 style="margin-top:28px">Owners on the register</h1>
+<p class="lede">Every owner on the register that shows its name, newest first. Names are shown unless the owner hides them; an owner that hides its name is on the register too, and its agents can be looked up by ID. An owner that entered its own agents appears here once it has proved its domain; until then it has its own page and can be found by name search.</p>
+<div id="out"><p class="note">Loading…</p></div>
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+<script>
+const out = document.getElementById("out");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const proofText = o => { const p = (o && o.proof) || {}; const bits = []; if (p.domain) bits.push("controls " + p.domain); else if ((p.kinds || []).indexOf("domain") >= 0) bits.push("controls its domain"); if (p.company) bits.push("Companies House: " + p.company.name + " (" + p.company.number + ")"); else if ((p.kinds || []).indexOf("company") >= 0) bits.push("a company entry on record"); if (p.reviewed) bits.push("reviewed by the register"); return bits.join("; "); };
+const tierLabel = t => t === "verified" ? "verified" : t === "email" ? "email confirmed" : "unverified";
+const when = iso => { if (!iso) return "–"; const d = new Date(String(iso).replace(" ", "T").replace(/\+00$/, "Z")); return isNaN(d) ? esc(iso) : d.toLocaleDateString(undefined, {dateStyle:"medium"}); };
+(async () => {
+  let d; try { d = await (await fetch("/api/v1/register/owners")).json(); } catch (e) {}
+  if (!d || !d.ok) { out.innerHTML = '<p class="note">The register did not answer. Try again in a moment.</p>'; return; }
+  const os = d.owners || [];
+  if (!os.length) { out.innerHTML = '<div class="card"><p class="note" style="margin:0">No owner has chosen to show its name yet.</p></div>'; return; }
+  out.innerHTML = '<div class="card" style="padding:6px 12px"><table><thead><tr><th>Owner</th><th>Agents</th><th>In standing</th><th>Actions on record</th><th>Since</th></tr></thead><tbody>' +
+    os.map(o => '<tr><td><a href="/o/' + encodeURIComponent(o.id) + '">' + esc(o.name) + '</a> <span class="pill ' + (o.verification === "verified" ? "" : "warn") + '">' + esc(tierLabel(o.verification)) + '</span>' + (proofText(o) ? '<br><span class="note">' + esc(proofText(o)) + '</span>' : '') + '</td>' +
+      '<td class="mono">' + o.agents + '</td><td class="mono">' + o.agentsInStanding + '</td><td class="mono">' + Number(o.receipts).toLocaleString() + '</td><td>' + when(o.since) + '</td></tr>').join("") +
+    '</tbody></table></div>';
+})();
+</script>
+</body>
+</html>

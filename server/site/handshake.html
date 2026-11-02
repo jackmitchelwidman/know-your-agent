@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The handshake · Register of Traceable Agents</title>
+<meta name="description" content="Watch one agent check another's ID and Record of Action before dealing with it. Live, on the real register.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+.hs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.party{border:1px solid var(--rule);padding:14px 16px;min-height:120px}
+.party .who{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.party .nm{font-size:20px}
+.steps2{list-style:none;padding:0;margin:0;counter-reset:s}
+.steps2 li{border-top:1px solid var(--hair);padding:12px 0 12px 44px;position:relative;color:var(--faint)}
+.steps2 li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:11px;width:28px;height:28px;border:1px solid var(--hair);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:12px}
+.steps2 li.on{color:var(--ink)}.steps2 li.on::before{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.steps2 li .d{display:block;font-size:14px;color:var(--muted);margin-top:4px}
+.steps2 li.on .d{color:var(--muted)}
+.steps2 li pre{margin:8px 0 0;max-height:220px;white-space:pre-wrap;word-break:break-all}
+.verdict{margin-top:16px}
+@media (max-width:600px){.hs{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a></nav>
+</header>
+
+<h1>The handshake</h1>
+<p class="lede">Before one agent acts for another, it checks who the other is and what its Record of Action holds. Watch it happen between two real agents on this register. Nothing here is staged: real keys, real runs, and both records gain a receipt.</p>
+
+<div class="hs">
+  <div class="party"><div class="who">Agent A, the one deciding</div><div class="nm" id="aName">…</div><div class="mono note" id="aId"></div></div>
+  <div class="party"><div class="who">Agent B, the one being checked</div><div class="nm" id="bName">…</div><div class="mono note" id="bId"></div></div>
+</div>
+
+<div class="row" style="margin:6px 0 18px">
+  <button id="go">Run the handshake</button>
+  <button id="bad" class="ghost">Run it with a forged proof</button>
+  <span class="note" id="msg" style="align-self:center"></span>
+</div>
+
+<ol class="steps2" id="steps">
+  <li id="s1"><b>A sends B a challenge.</b><span class="d">A fresh random value, used once. Only a reply signed over this exact value will count.</span><pre id="p1" hidden></pre></li>
+  <li id="s2"><b>B proves it holds its key.</b><span class="d">B's verifier signs the challenge with B's key. The key never leaves the verifier; B's runtime never sees it.</span><pre id="p2" hidden></pre></li>
+  <li id="s3"><b>A checks the proof and reads B's Record of Action.</b><span class="d">One call to the register: is the signature B's, is the challenge the one A sent, is it fresh; then who owns B, its standing, and its record.</span><pre id="p3" hidden></pre></li>
+  <li id="s4"><b>A's policy decides.</b><span class="d">Any agent, only agents on the register in good standing, or only verified owners. The decision is written to A's own record.</span><div id="p4"></div></li>
+</ol>
+
+<div id="after" hidden>
+  <h2>What changed on the register</h2>
+  <p class="note">Both records gain a receipt within a minute: B for proving its identity, A for checking another agent. Open them:</p>
+  <p><a id="aLink" href="#">A's Record of Action</a> · <a id="bLink" href="#">B's Record of Action</a></p>
+</div>
+
+<h2>Do this with your own agents</h2>
+<p>An agent Sheaf runs has two tools, <code>check_agent</code> and <code>prove_identity</code>. An agent connected through the Sheaf MCP server has <code>sheaf_check_agent</code> and <code>sheaf_prove_identity</code>. Any other verifier can do the same with the two calls on <a href="/format.html#handshake">the format page</a>.</p>
+
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function reset() { for (const i of [1,2,3,4]) { $("s"+i).classList.remove("on"); } for (const i of [1,2,3]) { $("p"+i).hidden = true; $("p"+i).textContent = ""; } $("p4").innerHTML = ""; $("after").hidden = true; }
+async function run(tamper) {
+  reset(); $("go").disabled = $("bad").disabled = true; $("msg").textContent = "Running on the live register…";
+  let d;
+  try { d = await (await fetch("/api/v1/register/demo/handshake", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({tamper: !!tamper})})).json(); }
+  catch (e) { $("msg").textContent = "The register did not answer."; $("go").disabled = $("bad").disabled = false; return; }
+  if (!d.ok) { $("msg").textContent = d.error || "The handshake could not run."; $("go").disabled = $("bad").disabled = false; return; }
+  $("aName").textContent = d.a.name; $("aId").textContent = d.a.id; $("bName").textContent = d.b.name; $("bId").textContent = d.b.id;
+  $("s1").classList.add("on"); $("p1").hidden = false; $("p1").textContent = "challenge: " + d.challenge; await sleep(700);
+  $("s2").classList.add("on"); $("p2").hidden = false; $("p2").textContent = JSON.stringify(d.proof, null, 2); await sleep(900);
+  $("s3").classList.add("on"); $("p3").hidden = false;
+  const ip = d.check.identityProof || {};
+  $("p3").textContent = (tamper ? "challenge A actually checks against: " + d.challengeChecked + "\n" : "") + "identity proof: " + (ip.valid ? "valid" : "NOT valid, " + ip.reason) + "\n" + (d.check.summary || "");
+  await sleep(900);
+  $("s4").classList.add("on");
+  const pol = d.check.policy || {};
+  $("p4").innerHTML = '<div class="status ' + (pol.allowed ? "good" : "bad") + '">' + (pol.allowed ? "Proceed." : "Do not act for or with it.") + '<small>' + esc(pol.reason) + ' Policy on A\'s account: ' + esc(pol.counterpartyPolicy) + '.</small></div>';
+  $("aLink").href = "/a/" + encodeURIComponent(d.a.fingerprint); $("bLink").href = "/a/" + encodeURIComponent(d.b.fingerprint);
+  $("after").hidden = false; $("msg").textContent = tamper ? "The forged proof was caught." : "Done. Both records now carry this."; $("go").disabled = $("bad").disabled = false;
+}
+$("go").addEventListener("click", () => run(false));
+$("bad").addEventListener("click", () => run(true));
+</script>
+</body>
+</html>

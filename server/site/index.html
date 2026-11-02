@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Register of Traceable Agents</title>
+<meta name="description" content="A public register of AI agents. Every agent on it has an ID, an owner, and a record of what it has done. Look an agent up before you deal with it.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>A public register of AI agents, their owners and their records. Established 2026.</small></a></div>
+  <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="/about.html#join">Join</a></nav>
+</header>
+
+<h1>Search the register.</h1>
+<p class="lede">Every agent on this register has an ID, an owner who signed for it, and a record of what it has done. Paste an agent's ID, or type the name of an owner or an agent, to see who stands behind it and whether its record is clean.</p>
+
+<form class="card" id="f" action="/" method="get">
+  <div class="row">
+    <input type="text" id="q" name="q" placeholder="An agent ID, an owner ID, or a name" autocomplete="off" required>
+    <button type="submit">Look it up</button>
+  </div>
+  <p class="note" style="margin:10px 0 0">An ID gives one of three answers: identified with a verified owner, identified with an owner on record, or unknown. A name finds owners who chose to show it. <a href="/owners.html">See every listed owner.</a></p>
+  <div id="results" hidden></div>
+</form>
+
+<div class="grid" id="stats" hidden>
+  <div class="stat"><b id="s-owners">–</b><span>Owners listed</span></div>
+  <div class="stat"><b id="s-agents">–</b><span>Production agents in good standing</span></div>
+  <div class="stat"><b id="s-receipts">–</b><span>Actions on record</span></div>
+</div>
+<p class="note" id="s-test" hidden style="margin:6px 0 0"></p>
+<p class="note" id="s-cp" hidden style="margin:6px 0 0"></p>
+
+<h2>1. How the register works</h2>
+<ol class="steps">
+  <li><b>An owner signs for the agent.</b> The owner is a company or a person. They hold a root key and sign each agent's ID with it. An ID with no owner's signature counts as unknown.</li>
+  <li><b>Every action adds a receipt.</b> Each time the agent acts through a verifier, the verifier adds a signed receipt to the agent's record: what kind of action, what the verdict was, and when. The agent's own software needs no change; the verifier it already acts through writes the receipt. The content of the action stays with the owner. The register holds only hashes.</li>
+  <li><b>Anyone can check.</b> Before your systems deal with an agent, look it up. The answer, the owner's signature and the whole receipt chain can be checked from the public keys alone. You do not have to trust this site.</li>
+</ol>
+
+<h2>2. What a determination means</h2>
+<div class="card">
+  <dl>
+    <dt><span class="pill">Identified, owner verified</span></dt><dd>An owner signed for this agent and has proved who it is: it controls the domain it named (a token placed in the domain's DNS or on its website), or the register's keeper has reviewed it. A Companies House entry may be attached to a proved domain.</dd>
+    <dt><span class="pill warn">Identified, owner on record</span></dt><dd>An owner signed for this agent. It has not yet proved who it is.</dd>
+    <dt><span class="pill bad">Unknown</span></dt><dd>No agent with this ID is on the register. Treat it as anonymous.</dd>
+  </dl>
+</div>
+<p class="note">What an agent may do with each answer is your decision. A bank might let an unknown agent read a price list and nothing more.</p>
+
+<h2>3. Entering your agents on the register</h2>
+<p>Anyone who owns an agent can enter it, in one command: <code>npx @sheaf-labs/kya join &lt;agent-name&gt;</code>. The tool makes the keys on your machine, you sign for the agent as its owner, and the register records it. Any system that runs or checks AI agents can also issue IDs and write receipts in the published format. The first one is <a href="https://sheaf.one">Sheaf</a>: every Sheaf account is on the register from the day it is made, each of its agents gets an ID under the owner's own key, and every checked action, past and future, is a receipt on the agent's record. An owner can hide its names or leave at any time. <a href="/about.html#join">How to join.</a></p>
+
+<footer>
+  <span class="ref">traceableagents.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+</footer>
+</div>
+<script>
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const results = document.getElementById("results");
+async function search(q) {
+  results.hidden = false; results.innerHTML = '<p class="note" style="margin:14px 0 0">Looking…</p>';
+  let d; try { d = await (await fetch("/api/v1/register/search?q=" + encodeURIComponent(q))).json(); } catch (e) {}
+  if (!d || !d.ok) { results.innerHTML = '<p class="note" style="margin:14px 0 0">The register did not answer. Try again in a moment.</p>'; return; }
+  if (d.exact) { location.href = d.exact.url; return; }
+  const hs = d.hits || [];
+  if (!hs.length) {
+    results.innerHTML = '<div class="status bad" style="margin:14px 0 0">No match<small>No listed owner or agent is called “' + esc(q) + '”. An owner that has not chosen to show its name is still on the register; look its agents up by ID.</small></div>';
+    return;
+  }
+  // Production agents and owners first. Test agents are on the register too, under their own heading.
+  const row = h => '<tr><td><a href="' + esc(h.url) + '">' + esc(h.name) + '</a>' + (h.fingerprint ? ' <span class="mono note">' + esc(h.fingerprint) + '</span>' : '') + '</td>' +
+      '<td>' + (h.kind === "owner" ? "Owner" : "Agent" + (h.environment === "test" ? ' <span class="pill warn">test</span>' : '') + (h.status && h.status !== "issued" ? ", " + esc(h.status) : "")) + '</td>' +
+      '<td><a href="/o/' + encodeURIComponent(h.owner.id) + '">' + esc(h.owner.name) + '</a></td></tr>';
+  const main = hs.filter(h => h.kind === "owner" || h.environment !== "test"), tests = hs.filter(h => h.kind !== "owner" && h.environment === "test");
+  const table = rows => '<table style="margin-top:14px"><thead><tr><th>Name</th><th>What</th><th>Owner</th></tr></thead><tbody>' + rows.map(row).join("") + '</tbody></table>';
+  results.innerHTML = (main.length ? table(main) : '<p class="note" style="margin:14px 0 0">No production agent or owner is called “' + esc(q) + '”.</p>') +
+    (tests.length ? '<p class="note" style="margin:14px 0 0">' + tests.length + ' test agent' + (tests.length === 1 ? '' : 's') + ' also match' + (tests.length === 1 ? 'es' : '') + '. <a href="#" id="showtests">Show</a></p><div id="tests" hidden>' + table(tests) + '</div>' : '');
+  const st = document.getElementById("showtests");
+  if (st) st.addEventListener("click", e => { e.preventDefault(); document.getElementById("tests").hidden = false; st.parentNode.hidden = true; });
+}
+document.getElementById("f").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var q = document.getElementById("q").value.trim();
+  if (!q) return;
+  history.replaceState(null, "", "/?q=" + encodeURIComponent(q));
+  search(q);
+});
+(function () { var q = new URLSearchParams(location.search).get("q"); if (q) { document.getElementById("q").value = q; search(q); } })();
+fetch("/api/v1/register/stats").then(r => r.json()).then(d => {
+  if (!d || !d.ok) return;
+  document.getElementById("s-owners").textContent = d.owners.toLocaleString();
+  document.getElementById("s-agents").textContent = d.agentsInStanding.toLocaleString();
+  document.getElementById("s-receipts").textContent = d.receipts.toLocaleString();
+  document.getElementById("stats").hidden = false;
+  const t = d.test || {};
+  if (t.agents) {
+    document.getElementById("s-test").textContent = "And " + t.agentsInStanding.toLocaleString() + " test agent" + (t.agentsInStanding === 1 ? "" : "s") + " in good standing with " + t.receipts.toLocaleString() + " action" + (t.receipts === 1 ? "" : "s") + " on record. Test agents are marked as such by their owners and carry full records.";
+    document.getElementById("s-test").hidden = false;
+  }
+}).catch(function () {});
+fetch("/api/v1/register/checkpoints?limit=1").then(r => r.json()).then(d => {
+  const c = (d.checkpoints || [])[0]; if (!c) return;
+  document.getElementById("s-cp").innerHTML = esc(c.words) + ' <a href="/format.html#checkpoint">How the checkpoint works.</a>';
+  document.getElementById("s-cp").hidden = false;
+}).catch(function () {});
+</script>
+</body>
+</html>
