@@ -35,6 +35,10 @@ door as everyone else's.
 "Traceable Agents", "Register of Traceable Agents", the seal and traceableagents.org identify the canonical register
 and its operator. The code and the format are open for anyone to use under their own name. See TRADEMARKS.md.
 
+## Where things live
+
+The standard: <https://know-your-agent.org> and this repository. The canonical register: <https://traceableagents.org>.
+
 ## Contact
 
 register@traceableagents.org

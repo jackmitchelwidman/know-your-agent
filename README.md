@@ -1,5 +1,7 @@
 # KYA: Know Your Agent
 
+<https://know-your-agent.org>
+
 The open format for agent identity and the Record of Action, and the clients that speak it. The public register that runs it is the Register of Traceable Agents.
 
 Banks run Know Your Customer before they open an account. KYA is the same check for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and
