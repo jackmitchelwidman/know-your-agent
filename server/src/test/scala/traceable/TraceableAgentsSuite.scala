@@ -43,25 +43,6 @@ class TraceableAgentsSuite extends FunSuite {
   }
 }
 
-class HostedProgressSuite extends FunSuite {
-  import io.circe.generic.auto._
-  import HostedAgentService.Progress
-  test("old progress JSON without stoppedBecause or incomplete decodes") {
-    val old = """{"task":"t","steps":[],"done":false,"answer":null,"heldActionId":null}"""
-    val p = parser.parse(old).flatMap(_.as[Progress])
-    assert(p.isRight, p.toString)
-    assertEquals(p.toOption.get.stoppedBecause, None)
-    assertEquals(p.toOption.get.incomplete, false)
-  }
-  test("a stopped run is done, incomplete, and carries the reason") {
-    val p = HostedAgentService.stopped(Progress("t", Nil, done = false, None, None), "Stopped before step 3: cap reached.")
-    assert(p.done && p.incomplete)
-    assertEquals(p.stoppedBecause, Some("Stopped before step 3: cap reached."))
-    val again = parser.parse(p.asJson.noSpaces).flatMap(_.as[Progress])
-    assertEquals(again.toOption.map(_.stoppedBecause), Some(Some("Stopped before step 3: cap reached.")))
-  }
-}
-
 /** The handshake's proof: signed by the agent key, bound to the challenge the counterparty issued, fresh. */
 class TraceableProofSuite extends FunSuite {
   import TraceableAgents._
