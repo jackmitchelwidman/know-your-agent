@@ -153,7 +153,22 @@ Every write is one JSON body, signed by the writing system's key over the canoni
   - Who issued what  
     `GET /api/v1/register/verifiers` lists the systems and whether the register has approved them, and how many owners have entered their own agents. Every lookup says which system issued the agent, or that the owner did.
 
-A worked client in forty lines of Node, using only the built-in Ed25519, is at [register/verifier-example](../clients/examples/verifier.mjs). It registers a system, writes an owner and an agent, writes two receipts, and calls `/verify`.
+A worked client in forty lines of Node, using only the built-in Ed25519, is at [clients/examples/verifier.mjs](https://github.com/jackmitchelwidman/traceable-agents/blob/main/clients/examples/verifier.mjs) in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls `/verify`.
+
+## Registers that talk to each other
+
+Anyone may run a register from the published server. Registers that speak this format answer each other's lookups, so an agent entered on one can be checked from another. Each register publishes who it is and whom it asks:
+
+  - Self  
+    `GET /api/v1/register/self` returns `{register:{id, name, url}, peers:[…]}`. `id` is the register's own did:key, when it has one.
+  - The hop  
+    A lookup that finds nothing on this register is asked, once, of each peer: `GET <peer>/api/v1/register/lookup?id=…&local=1`. The `local` flag stops the peer from asking its own peers, so a question travels one hop and never loops.
+  - Trust  
+    A peer can report; it cannot vouch. This register uses a peer's answer only after it has re-checked, from the public keys inside the answer, that `ownerSignature` is the owner key's over the canonical descriptor and that `descriptor.owner` is that key. An answer that fails the check is treated as not found. The standing, counts and Record Score in a forwarded answer are the peer's report and are marked as such.
+  - What the answer says  
+    Every answer carries `register:{url, name, id}`, the register that holds the entry. A forwarded answer also carries `federated:true`, `verifiedHere:true` and `askedBy`, the register you asked.
+
+The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its `self` and asking the existing operators to list it as a peer. How that is decided is in the [governance note](https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md).
 
 ## Owner verification
 
@@ -165,6 +180,8 @@ An owner is **verified** when it has proved control of a domain, or when the reg
     `https://<domain>/.well-known/traceable-agents.txt` containing the line `traceableagents-verify=<token>`
 
 Beneath verified sits a weaker mark, **email confirmed**: the owner signed in with a code sent to its email address, so the register knows the address is real and in the owner's hands. It says nothing about who the owner is. The address itself is never shown. An owner with no domain and no company, an individual for instance, carries this mark until it proves a domain or is reviewed.
+
+An owner that entered its own agents claims and checks its domain with two signed calls: `POST /api/v1/register/owners/verify` with `{type:"traceable-verify", owner, domain, at, signature}` returns the token; `POST /api/v1/register/owners/verify/check` with `{type:"traceable-verify-check", owner, at, signature}` looks for it. The tool does this as `kya verify <domain>` and `kya verify-check`.
 
 The register checks the record when the owner asks and again every day. A domain whose record disappears keeps its mark for 45 days, then loses it until the record is back. Once a domain is proved, the owner may attach a **Companies House** entry by number; the register fetches the registered name from Companies House and shows it beside the domain. The domain proof shows the owner controls that domain. The company entry shows which registered company the owner says it is; the two are tied together by the keeper's review, which is the third mark. A lookup says which of the three an owner holds, in the `proof` field of the owner.
 

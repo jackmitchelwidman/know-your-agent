@@ -12,7 +12,7 @@ import java.time.Instant
 
 
 /**
- * The public register (traceableagents.org). No account, no key. Answers one question about an
+ * A public register of traceable agents (the code behind traceableagents.org). No account, no key. Answers one question about an
  * agent: who owns it, is it in standing, and what does its record hold. The answer carries
  * hashes, counts, verdict kinds, timestamps and signatures. Never the content of an action.
  */
@@ -287,7 +287,7 @@ object TraceableAgentsRoutes {
       // ── the open door: another system issues IDs and writes receipts ──
       case GET -> Root / "api" / "v1" / "register" / "verifiers" =>
         (repo.verifiers, repo.selfIssuers).tupled.flatMap { case (vs, selfN) =>
-          jsonResp(Status.Ok, Json.obj("ok" -> true.asJson, "verifiers" -> (Json.obj("id" -> "sheaf".asJson, "name" -> "Sheaf".asJson, "website" -> "https://sheaf.one".asJson, "status" -> "approved".asJson, "since" -> "2026-10-18".asJson) ::
+          jsonResp(Status.Ok, Json.obj("ok" -> true.asJson, "verifiers" -> (
             vs.filter(_.status != "self").map(v => Json.obj("id" -> v.did.asJson, "name" -> v.name.asJson, "website" -> v.website.asJson, "status" -> v.status.asJson, "since" -> v.createdAt.take(10).asJson))).asJson,
             "ownersIssuingDirectly" -> selfN.asJson,
             "note" -> "Entries from a registered verifier can be looked up by ID at once. They enter the public counts, search and the owners page once the register has approved the verifier. Owners that enter their own agents through /join can be looked up and searched at once; they join the owners page and the public counts once they have proved their domain. Their lookups say the owner issued the ID itself.".asJson))
@@ -296,11 +296,11 @@ object TraceableAgentsRoutes {
         Json.obj("verifier" -> Json.obj("id" -> v.did.asJson, "name" -> v.name.asJson, "website" -> v.website.asJson, "status" -> v.status.asJson)))))
       case req @ POST -> Root / "api" / "v1" / "register" / "entries" => verifierWrite(req)(_.entry(_).map(_.map(a =>
         Json.obj("agent" -> Json.obj("id" -> a.did.asJson, "fingerprint" -> a.fingerprint.asJson, "name" -> a.name.asJson, "environment" -> a.environment.asJson,
-          "status" -> a.status.asJson, "lookup" -> ("https://traceableagents.org/a/" + a.fingerprint).asJson)))))
+          "status" -> a.status.asJson, "lookup" -> (federation.map(_.selfUrl.stripSuffix("/")).getOrElse("") + "/a/" + a.fingerprint).asJson)))))
       // the direct door: an owner enters its own agent, no system in between
       case req @ POST -> Root / "api" / "v1" / "register" / "join" => verifierWrite(req)(_.join(_).map(_.map(a =>
         Json.obj("agent" -> Json.obj("id" -> a.did.asJson, "fingerprint" -> a.fingerprint.asJson, "name" -> a.name.asJson, "environment" -> a.environment.asJson,
-          "status" -> a.status.asJson, "lookup" -> ("https://traceableagents.org/a/" + a.fingerprint).asJson),
+          "status" -> a.status.asJson, "lookup" -> (federation.map(_.selfUrl.stripSuffix("/")).getOrElse("") + "/a/" + a.fingerprint).asJson),
           "note" -> "The owner is now the issuing system for its own agents. Write receipts to /receipts and standing to /entries/status with verifier = the owner's id, signed by the owner key.".asJson))))
       // owner verification by the owner itself, signed with the owner key
       case req @ POST -> Root / "api" / "v1" / "register" / "owners" / "verify" => verifierWrite(req)(_.verifyDomain(_))
@@ -422,8 +422,8 @@ class TraceableAgentsLookup[F[_]: Async](repo: TraceableAgentsRepository[F]) {
           (repo.owner(a.customerId), repo.summary(a.agentId), repo.receiptHead(a.agentId), repo.ancestors(a.did), repo.children(a.did), repo.record(a.agentId, a.did),
            a.verifierDid.fold(Async[F].pure(Option.empty[TaVerifierRow]))(repo.verifier)).tupled.flatMap { case (o, s, head, ups, kids, rec, ver) =>
             val self = ver.exists(_.status == "self")
-            val issuedThrough = Json.obj("id" -> (if (self) "owner" else a.verifierDid.getOrElse("sheaf")).asJson,
-              "name" -> (if (self) "Its owner" else ver.map(_.name).getOrElse("Sheaf")).asJson,
+            val issuedThrough = Json.obj("id" -> (if (self) "owner" else a.verifierDid.getOrElse("register")).asJson,
+              "name" -> (if (self) "Its owner" else ver.map(_.name).getOrElse("this register")).asJson,
               "approved" -> ver.fold(true)(v => v.status == "approved" || v.status == "self").asJson,
               "self" -> self.asJson)
             val (status, ans) = answer(a, o, ups)

@@ -20,7 +20,7 @@ import TraceableAgents._
  *   statement  canonical {v:1, type:"traceable-checkpoint", at, agents, receipts, root, prevRoot}
  *   anchored   sha256(statement bytes), as a 32-byte digest, to the calendars
  */
-class TraceableCheckpointService[F[_]: Async: Logger](repo: TraceableAgentsRepository[F], ots: OtsClient[F], otsEnabled: Boolean) {
+class TraceableCheckpointService[F[_]: Async: Logger](repo: TraceableAgentsRepository[F], ots: OtsClient[F], otsEnabled: Boolean, baseUrl: String = "https://traceableagents.org") {
 
   def leafHash(did: String, seq: Long, hash: String): Array[Byte] =
     sha256(canonicalBytes(Json.arr(Json.fromString("traceable-checkpoint-leaf"), Json.fromString(did), Json.fromLong(seq), Json.fromString(hash))))
@@ -88,7 +88,7 @@ class TraceableCheckpointService[F[_]: Async: Logger](repo: TraceableAgentsRepos
     "seq" -> c.seq.asJson, "at" -> c.atIso.asJson, "agents" -> c.agents.asJson, "receipts" -> c.receipts.asJson,
     "root" -> c.root.asJson, "prevRoot" -> c.prevRoot.asJson, "statementHash" -> c.statementHash.asJson,
     "status" -> c.status.asJson, "bitcoinBlock" -> c.bitcoinHeight.asJson, "confirmedAt" -> c.confirmedAt.asJson,
-    "calendar" -> c.calendarUrl.asJson, "proofUrl" -> s"https://traceableagents.org/api/v1/register/checkpoints/${c.seq}/proof.ots".asJson,
+    "calendar" -> c.calendarUrl.asJson, "proofUrl" -> s"${baseUrl.stripSuffix("/")}/api/v1/register/checkpoints/${c.seq}/proof.ots".asJson,
     "words" -> words(c).asJson)
 
   def words(c: TaCheckpointRow): String = c.status match {

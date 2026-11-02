@@ -174,11 +174,11 @@ class TraceableVerifierService[F[_]: Async](repo: TraceableAgentsRepository[F], 
         case Left(e) => Async[F].pure(Left(e))
         case Right((ownerDid, ownerPk, ownerName, listed, d, ownerSig, agentDid, agentPk, name, kind, env, issued, expires, parentDid, parentSig)) =>
           repo.agentByDid(agentDid).flatMap {
-            case Some(a) => Async[F].pure(Left(s"that agent ID is already on the register, issued through ${a.verifierDid.getOrElse("Sheaf")}"))
+            case Some(a) => Async[F].pure(Left(s"that agent ID is already on the register, issued through ${a.verifierDid.getOrElse("this register")}"))
             case None => repo.ownerByDid(ownerDid).flatMap { existing =>
               val ownerF: F[Either[String, TaOwnerRow]] = existing match {
                 case Some(o) if o.verifierDid.contains(v.did) => repo.setOwnerListing(o.customerId, listed, ownerName.take(120)) >> repo.ownerByDid(ownerDid).map(_.toRight("owner vanished"))
-                case Some(o) => Async[F].pure(Left(s"that owner is on the register through ${o.verifierDid.getOrElse("Sheaf")}; only that system may write for it"))
+                case Some(o) => Async[F].pure(Left(s"that owner is on the register through ${o.verifierDid.getOrElse("this register")}; only that system may write for it"))
                 case None =>
                   val row = TaOwnerRow(UUID.randomUUID(), ownerDid, b64(ownerPk), "", "", ownerName.take(120), "unverified", None, None, "active", nowIso, listed, Some(nowIso), Some(v.did))
                   repo.insertExternalOwner(row, listed) >> repo.ownerByDid(ownerDid).map(_.toRight("could not store the owner"))
@@ -222,7 +222,7 @@ class TraceableVerifierService[F[_]: Async](repo: TraceableAgentsRepository[F], 
         case None => Async[F].pure(Left("agent (did:key) is missing"))
         case Some(agentDid) => repo.agentByDid(agentDid).flatMap {
           case None => Async[F].pure(Left("that agent is not on the register; submit its entry first"))
-          case Some(a) if !a.verifierDid.contains(v.did) => Async[F].pure(Left(s"that agent was issued through ${a.verifierDid.getOrElse("Sheaf")}; only that system may write its receipts"))
+          case Some(a) if !a.verifierDid.contains(v.did) => Async[F].pure(Left(s"that agent was issued through ${a.verifierDid.getOrElse("this register")}; only that system may write its receipts"))
           case Some(a) =>
             val items = c.downField("receipts").focus.flatMap(_.asArray).map(_.toList).getOrElse(Nil)
             if (items.isEmpty) Async[F].pure(Left("receipts is empty"))

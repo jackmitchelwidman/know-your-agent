@@ -41,5 +41,6 @@ const when = iso => { if (!iso) return "–"; const d = new Date(String(iso).rep
     '</tbody></table></div>';
 })();
 </script>
+<script>fetch("/api/v1/register/self").then(function(r){return r.json()}).then(function(d){var n=d&&d.register&&d.register.name;if(!n)return;document.querySelectorAll(".masthead .title").forEach(function(e){e.textContent=n});document.title=document.title.replace("Register of Traceable Agents",n)}).catch(function(){})</script>
 </body>
 </html>

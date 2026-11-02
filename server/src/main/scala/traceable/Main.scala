@@ -58,7 +58,7 @@ object Main extends IOApp.Simple {
       val vrepo = TraceableVerificationRepository[IO](xa)
       val verification = new TraceableVerificationService[IO](vrepo, repo, client, opt("COMPANIES_HOUSE_API_KEY"))
       val verifiers = new TraceableVerifierService[IO](repo, Some(verification))
-      val checkpoints = new TraceableCheckpointService[IO](repo, OtsClient[IO](client), ots)
+      val checkpoints = new TraceableCheckpointService[IO](repo, OtsClient[IO](client), ots, selfUrl)
       val federation = TraceableAgentsRoutes.Federation[IO](client, selfUrl, name, opt("REGISTER_DID"), peers)
       val api = TraceableAgentsRoutes.routes[IO](repo, Some(verifiers), Some(checkpoints), Some(federation))
       val app = (if (siteDir.isEmpty) api else api <+> Site.routes[IO](siteDir)).orNotFound

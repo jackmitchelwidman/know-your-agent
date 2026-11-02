@@ -21,6 +21,14 @@ KYA_REGISTER=http://localhost:8080 npx @sheaf-labs/kya join first-agent
 Without Docker: `sbt run` with `DATABASE_URL` set (see `Main.scala` for every setting), or
 `sbt assembly` and `java -jar target/scala-3.3.3/register.jar`.
 
+## The pages
+
+`site/` is a copy of traceableagents.org's pages. The masthead takes your register's name from
+`REGISTER_NAME` at load, but the About page, the footer ("Kept by Sheaf Labs") and the Join text describe
+the canonical register. Replace them with your own before you publish: the names and seal of the canonical
+register are not yours to use (see [TRADEMARKS.md](../TRADEMARKS.md)). Set `SITE_DIR=` empty to serve the
+API alone and put your own site in front.
+
 ## Settings
 
 | Variable | Meaning | Default |
