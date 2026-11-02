@@ -8,7 +8,7 @@ class OwnerVerificationSuite extends FunSuite {
 
   test("a plain domain is accepted and normalised; schemes, paths, ports, IPs and single labels are not") {
     assertEquals(normaliseHost(" Example.COM. "), Right("example.com"))
-    assertEquals(normaliseHost("https://sheaf.one/"), Right("sheaf.one"))
+    assertEquals(normaliseHost("https://sheaflabs.ai/"), Right("sheaflabs.ai"))
     assertEquals(normaliseHost("bücher.example"), Right("xn--bcher-kva.example"))
     assert(normaliseHost("example.com/path").isLeft)
     assert(normaliseHost("example.com:8443").isLeft)
@@ -57,7 +57,7 @@ class OwnerVerificationSuite extends FunSuite {
   }
 
   test("the proof summary round-trips through verified_by and says when an owner counts as verified") {
-    val p = Proofs(Some("sheaf.one"), Some(("Sheaf Labs Ltd", "12345678")), Some("2026-10-21"))
+    val p = Proofs(Some("sheaflabs.ai"), Some(("Sheaf Labs Ltd", "12345678")), Some("2026-10-21"))
     assertEquals(parseProofs(Some(p.encode)), p)
     assertEquals(p.kinds, List("domain", "company", "reviewed"))
     assert(Proofs(None, None, Some("2026-10-21")).verified)

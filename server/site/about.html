@@ -21,7 +21,7 @@
 <p class="lede">AI agents are starting to act for companies and people: paying invoices, moving money, sending mail, talking to other agents. The register exists so that none of that is anonymous. Behind every agent on it there is an owner who signed for it and a record of what it has done.</p>
 
 <h2>Who runs it</h2>
-<p>The register was started by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> in 2026. Sheaf Labs built the first verifier, wrote the format and runs the site today. The plan is for the register to be governed by its members: every verifier that issues IDs and writes receipts gets a say, and the founding company gets no special answer from the lookup. Its own agents go through the same door as everyone else's.</p>
+<p>The register was started by <a href="https://sheaflabs.ai/labs.html">Sheaf Labs</a> in 2026. Sheaf Labs built the first verifier, wrote the format and runs the site today. The plan is for the register to be governed by its members: every verifier that issues IDs and writes receipts gets a say, and the founding company gets no special answer from the lookup. Its own agents go through the same door as everyone else's.</p>
 
 <h2>What the register holds</h2>
 <ul>
@@ -47,7 +47,7 @@
 
 <h2 id="join">Join</h2>
 <p><b>If you own agents:</b> enter them yourself, in one command. <code>npx @sheaf-labs/kya init --owner "Your name or company"</code> makes your owner key on your own machine. <code>npx @sheaf-labs/kya join &lt;agent-name&gt;</code> makes the agent's key, signs its ID with yours, and enters it here. Your agent is then identified, with you as the owner on record; anyone can look it up or search your name. Prove you control your domain (<code>npx @sheaf-labs/kya verify &lt;your domain&gt;</code>, then <code>verify-check</code>) and you are a verified owner, listed on the owners page and counted on the front page. The same tool answers challenges, writes the agent's record and checks other agents. The register sees only public keys and signatures; the keys stay with you. <a href="/format.html#direct">How it works</a>.</p>
-<p><b>If your agents run on Sheaf:</b> they are already here. Every <a href="https://sheaf.one">Sheaf</a> account is on the register from the day it is made: every agent on the account gets an ID under the owner's key, and every checked action, past and future, adds a receipt. Your name and your agents' names are shown. The register exists for openness among agents, so that is the default; you can hide your names, and then you appear as an owner on record and your agents can be looked up by ID. You can leave at any time. What is already on the record stays, because a record that can be erased is worth nothing.</p>
+<p><b>If your agents run on Sheaf:</b> they are already here. Every <a href="https://sheaflabs.ai">Sheaf</a> account is on the register from the day it is made: every agent on the account gets an ID under the owner's key, and every checked action, past and future, adds a receipt. Your name and your agents' names are shown. The register exists for openness among agents, so that is the default; you can hide your names, and then you appear as an owner on record and your agents can be looked up by ID. You can leave at any time. What is already on the record stays, because a record that can be erased is worth nothing.</p>
 <p><b>The standard:</b> the register speaks KYA, Know Your Agent, an open format whose home is <a href="https://know-your-agent.org">know-your-agent.org</a>.</p>
 <p><b>If you want to run a register:</b> the server is open source, Apache-2.0, one <code>docker compose up</code>: <a href="https://github.com/jackmitchelwidman/know-your-agent">github.com/jackmitchelwidman/know-your-agent</a>. Point it at this one as a peer and the two answer each other's lookups. <a href="/format.html#federation">How registers talk to each other</a>.</p>
 <p><b>If you run a system that checks agents:</b> you can issue IDs and write receipts in <a href="/format.html">the published format</a> and submit them to the register. Write to <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a>. Verifiers that join have a seat in how the register is governed.</p>
@@ -55,7 +55,7 @@
 
 <footer>
   <span class="ref">know-your-agent.org</span>
-  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a></p>
+  <p>Kept by <a href="https://sheaflabs.ai/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a></p>
 </footer>
 </div>
 </body>
