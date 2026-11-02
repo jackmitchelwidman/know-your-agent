@@ -18,7 +18,7 @@ const AGENTS = pathJoin(HOME, "agents");
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const b58 = bytes => { let n = BigInt("0x" + Buffer.from(bytes).toString("hex")), s = ""; while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; } for (const b of bytes) { if (b !== 0) break; s = "1" + s; } return s; };
 const canonical = v => Array.isArray(v) ? "[" + v.map(canonical).join(",") + "]"
-  : v && typeof v === "object" ? "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}"
+  : v && typeof v === "object" ? "{" + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ":" + canonical(v[k])).join(",") + "}"
   : JSON.stringify(v);
 const sha256 = buf => createHash("sha256").update(buf).digest();
 const pubOf = priv => Buffer.from(createPrivateKey(priv).export({ format: "jwk" }).x, "base64url");
@@ -199,10 +199,10 @@ async function verify() {
   const o = owner(); const domain = rest[0];
   if (!domain) die("kya verify <domain>: the domain you control, for example acme.example");
   const r = await post("/api/v1/register/owners/verify", signed(o.key, { type: "traceable-verify", owner: didOf(o.key), domain, at: now() }));
-  const v = r.verification || {}; const tok = v.domainToken || v.token || (v.domain && v.domain.token);
+  const d = (r.verification || {}).domain || {}; const rec = d.record || {}; const file = d.file || {};
   out(`Claimed ${domain}. Put this where only the domain's controller can:`);
-  out(`  DNS:  _traceableagents.${domain}  TXT  "traceableagents-verify=${tok}"`);
-  out(`  or:   https://${domain}/.well-known/traceable-agents.txt containing the line traceableagents-verify=${tok}`);
+  out(`  DNS:  ${rec.name || "_traceableagents." + domain}  TXT  "${rec.value || ""}"`);
+  out(`  or:   ${file.url || "https://" + domain + "/.well-known/traceable-agents.txt"} containing the line ${file.content || rec.value || ""}`);
   out(`Then run: kya verify-check`);
   if (flags.json) out(r);
 }
