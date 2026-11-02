@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KYA · Know Your Agent</title>
+<meta name="description" content="KYA, Know Your Agent: the open standard for AI agent identity and the Record of Action. Put an agent on a register in one command. Apache-2.0.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='28' r='26' fill='none' stroke='%231B2CA8' stroke-width='3'/%3E%3Cpath d='M19 17h18v22H19z' fill='none' stroke='%231B2CA8' stroke-width='3'/%3E%3Cpath d='M33 36l3 3 6-7' fill='none' stroke='%231B2CA8' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{--ink:#14171F;--muted:#5B6274;--line:#E3E6EE;--bg:#FFFFFF;--panel:#F6F7FB;--blue:#1B2CA8;--go:#1E8E5A}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EEF1FA;--muted:#A9B0C6;--line:#2A3047;--bg:#0F1428;--panel:#161C33;--blue:#8DA1FF;--go:#4ED6A8}}
+:root[data-theme="dark"]{--ink:#EEF1FA;--muted:#A9B0C6;--line:#2A3047;--bg:#0F1428;--panel:#161C33;--blue:#8DA1FF;--go:#4ED6A8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header{padding:56px 0 8px}h1{font-size:clamp(2rem,5vw,3.2rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 14px}h1 small{display:block;font-size:.42em;font-weight:500;color:var(--muted);letter-spacing:0;margin-top:10px}
+h2{font-size:1.35rem;margin:44px 0 10px;letter-spacing:-.01em}p{margin:0 0 14px}a{color:var(--blue)}
+.lede{font-size:1.15rem;color:var(--muted);max-width:40rem}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font:14.5px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:10px 0 16px}code{font:.92em ui-monospace,Menlo,Consolas,monospace;background:var(--panel);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}.grid div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}.grid b{display:block;margin:0 0 6px}.grid p{margin:0;color:var(--muted);font-size:.95rem}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.three{border-left:3px solid var(--go);padding:2px 0 2px 14px;margin:10px 0}.three.amber{border-color:#D99A1E}.three.red{border-color:#D9534F}.three b{display:block}
+footer{margin:60px 0 40px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+nav a{margin-right:18px;font-size:.95rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <nav><a href="https://traceableagents.org">The register</a><a href="https://github.com/jackmitchelwidman/traceable-agents">Code</a><a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/spec/format.md">The format</a><a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">Governance</a></nav>
+  <h1>KYA. Know Your Agent.<small>The open standard for AI agent identity and the Record of Action.</small></h1>
+  <p class="lede">Banks run Know Your Customer before they open an account. KYA is the same check for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and what it has done.</p>
+</header>
+
+<h2>Put an agent on the register</h2>
+<pre><code>npx @sheaf-labs/kya init --owner "Your name or company"
+npx @sheaf-labs/kya join your-agent</code></pre>
+<p>Two commands, no account. The keys are made on your machine and stay there; the register sees only public keys and signatures. Your agent then has an ID anyone can check, with you as the owner on record. Prove you control your domain (<code>kya verify your-domain</code>) and you are a verified owner.</p>
+
+<h2>What a check answers</h2>
+<div class="three"><b>Identified, owner verified</b>The signature is the agent's, and the owner behind it has proved who it is.</div>
+<div class="three amber"><b>Identified, owner not yet verified</b>An owner signed for the agent but has not yet proved who it is. Your policy decides.</div>
+<div class="three red"><b>Unknown</b>No valid reply to your challenge, or no entry on any register.</div>
+<p>Every answer comes with the agent's Record of Action: what it has done, how often a person stopped it, and a score anyone can recompute from the receipts.</p>
+
+<h2>How it works</h2>
+<div class="grid">
+  <div><b>An ID is a key</b><p>An agent's ID is its Ed25519 public key as a <code>did:key</code>. Any program can make a key; what it cannot make is an owner's signature over it.</p></div>
+  <div><b>Receipts, in a chain</b><p>Each checked action adds a signed receipt naming the one before it. Hashes only; the register never holds the content of an action.</p></div>
+  <div><b>A handshake</b><p>A sends B a challenge, B signs it, A asks a register. Under two seconds, and both records gain a receipt.</p></div>
+</div>
+
+<h2>Open, and nobody's</h2>
+<p>The format, the signed test vectors, the <code>kya</code> tool, a Python client and the register server are published under Apache-2.0 at <a href="https://github.com/jackmitchelwidman/traceable-agents">github.com/jackmitchelwidman/traceable-agents</a>. Anyone may run a register from it: <code>docker compose up</code>. Registers that speak the format answer each other's lookups, so an agent entered on one can be checked from another; each register re-checks the signatures itself and trusts no peer's word.</p>
+<p>The <a href="https://traceableagents.org">Register of Traceable Agents</a> is the first and canonical register. It was started by Sheaf Labs, which wrote the format and runs it today; the plan is a body of the register's members, in which every operator and every system that issues IDs has a seat. <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">How that works.</a></p>
+
+<h2>Check your implementation</h2>
+<pre><code>git clone https://github.com/jackmitchelwidman/traceable-agents
+node traceable-agents/spec/vectors/verify.mjs</code></pre>
+<p>Fixed keys and signed objects for every part of the format. An implementation that recomputes the same hashes and accepts and rejects the same signatures speaks KYA.</p>
+
+<footer>know-your-agent.org · The format text is CC BY 4.0; code, schemas and vectors are Apache-2.0. "Traceable Agents" and traceableagents.org name the canonical register. Questions: <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></footer>
+</div>
+</body>
+</html>
