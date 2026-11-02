@@ -1,0 +1,214 @@
+{
+  "note": "Deterministic vectors for the Traceable Agents format v1. Keys are Ed25519 from the seeds shown; never use them for anything real. `at` values are fixed, so a live register will refuse the join and proof bodies as stale: check the signatures, not the clock.",
+  "canonicalJson": "keys sorted recursively, no whitespace, UTF-8; JSON.stringify for strings and numbers",
+  "keys": {
+    "owner": {
+      "seed": "0000000000000000000000000000000000000000000000000000000000000001",
+      "publicKeyHex": "4cb5abf6ad79fbf5abbccafcc269d85cd2651ed4b885b5869f241aedf0a5ba29",
+      "did": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG"
+    },
+    "agent": {
+      "seed": "0000000000000000000000000000000000000000000000000000000000000002",
+      "publicKeyHex": "7422b9887598068e32c4448a949adb290d0f4e35b9e01b0ee5f1a1e600fe2674",
+      "did": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+      "fingerprint": "2c5a92ed92c0b799"
+    },
+    "child": {
+      "seed": "0000000000000000000000000000000000000000000000000000000000000003",
+      "publicKeyHex": "f381626e41e7027ea431bfe3009e94bdd25a746beec468948d6c3c7c5dc9a54b",
+      "did": "did:key:z6MkvqoYXQfDDJRv8L4wKzxYeuKyVZBfi9Qo6Ro8MiLH3kDQ",
+      "fingerprint": "c2b6bf688fb8be00"
+    },
+    "stranger": {
+      "seed": "0000000000000000000000000000000000000000000000000000000000000004",
+      "publicKeyHex": "fd50b8e3b144ea244fbf7737f550bc8dd0c2650bbc1aada833ca17ff8dbf329b",
+      "did": "did:key:z6MkwW6aqMnjgrhJXFUko3NnZPGzVpkNzhYK7yEhnsibmLwL"
+    }
+  },
+  "descriptor": {
+    "object": {
+      "v": 1,
+      "type": "traceable-agent",
+      "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+      "owner": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG",
+      "name": "vector-agent",
+      "kind": "agent",
+      "environment": "test",
+      "issuedAt": "2026-11-02T10:00:00Z",
+      "expiresAt": "2027-11-02T10:00:00Z"
+    },
+    "canonical": "{\"environment\":\"test\",\"expiresAt\":\"2027-11-02T10:00:00Z\",\"id\":\"did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf\",\"issuedAt\":\"2026-11-02T10:00:00Z\",\"kind\":\"agent\",\"name\":\"vector-agent\",\"owner\":\"did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG\",\"type\":\"traceable-agent\",\"v\":1}",
+    "ownerSignature": "U09eKNAE/wji+ve+BnCPZtneMnE054Kj7ZutCbpSJ8cmPjODJhUV9rA8q7UUhcEuPbyjTmkR47fppSqC69Q6Cg=="
+  },
+  "childDescriptor": {
+    "object": {
+      "v": 1,
+      "type": "traceable-agent",
+      "id": "did:key:z6MkvqoYXQfDDJRv8L4wKzxYeuKyVZBfi9Qo6Ro8MiLH3kDQ",
+      "owner": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG",
+      "name": "vector-child",
+      "kind": "agent",
+      "environment": "test",
+      "issuedAt": "2026-11-02T10:00:00Z",
+      "expiresAt": "2027-11-02T10:00:00Z",
+      "parent": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf"
+    },
+    "canonical": "{\"environment\":\"test\",\"expiresAt\":\"2027-11-02T10:00:00Z\",\"id\":\"did:key:z6MkvqoYXQfDDJRv8L4wKzxYeuKyVZBfi9Qo6Ro8MiLH3kDQ\",\"issuedAt\":\"2026-11-02T10:00:00Z\",\"kind\":\"agent\",\"name\":\"vector-child\",\"owner\":\"did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG\",\"parent\":\"did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf\",\"type\":\"traceable-agent\",\"v\":1}",
+    "ownerSignature": "GBqVrh0YyJCGi4iYL2QtIpVm5/Kl2Fg2LyXydU85WXiSTGLpMTDDqToi/HuMz0JMvEkoB68Dtvq/VF3mbeCGDA==",
+    "parentSignature": "VMw7wzfmstqDV6dFAjB2nUpGVU60V/WclCGyyH/3Ip4fzvWptKrBCNknbuRRd4mEKJpUcTPDIdPJQy7G2kLIBA=="
+  },
+  "receipts": {
+    "genesis": "0000000000000000000000000000000000000000000000000000000000000000",
+    "chain": [
+      {
+        "seq": 1,
+        "at": "2026-11-02T10:01:00Z",
+        "kind": "run_started",
+        "decision": "start",
+        "runId": "run-1",
+        "actionHash": null,
+        "ledgerRowHash": "078fc158e9a0ecf2cd3cb3b79d908df31a55d3c21247d6b8225876afee952d02",
+        "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "hash": "d1a64bfa89a5fb7b5315a526d1ad49c584505771e53e6d32b7491ca362a20556",
+        "preimage": "[\"traceable-receipt\",\"did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf\",1,\"2026-11-02T10:01:00Z\",\"run_started\",\"start\",\"run-1\",null,\"078fc158e9a0ecf2cd3cb3b79d908df31a55d3c21247d6b8225876afee952d02\",\"0000000000000000000000000000000000000000000000000000000000000000\"]",
+        "signature": "4Z6srB/QMj3N9yzs3fwa9nTD3BterrKJfkv9ZLX13Ars1FZwhk8cc21fw5S1nAUsyjBG2eq/yFBseKKg8YGNDA=="
+      },
+      {
+        "seq": 2,
+        "at": "2026-11-02T10:02:00Z",
+        "kind": "held",
+        "decision": "hold",
+        "runId": "run-1",
+        "actionHash": "7dc19557200fe0cc896c39135b6bc04df68a2bb55906e54f8ec2269c4ced94ff",
+        "ledgerRowHash": "1d4e835849ca9e209b09028bccaf23221c467ad6c99ec29ab1852abd8702bf65",
+        "prevHash": "d1a64bfa89a5fb7b5315a526d1ad49c584505771e53e6d32b7491ca362a20556",
+        "hash": "f5e4af42a100a88a52230b90c006f4307336034dd318440c4c3c5a75067939a7",
+        "preimage": "[\"traceable-receipt\",\"did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf\",2,\"2026-11-02T10:02:00Z\",\"held\",\"hold\",\"run-1\",\"7dc19557200fe0cc896c39135b6bc04df68a2bb55906e54f8ec2269c4ced94ff\",\"1d4e835849ca9e209b09028bccaf23221c467ad6c99ec29ab1852abd8702bf65\",\"d1a64bfa89a5fb7b5315a526d1ad49c584505771e53e6d32b7491ca362a20556\"]",
+        "signature": "CnxE3ooUH2eS/IqqXxQODbwYNUPiSbjhUO0mU+5KoKG1ERat8YNl7HQNfXROgO6/ftUG9bJiXAC8M1fFjtCnAw=="
+      },
+      {
+        "seq": 3,
+        "at": "2026-11-02T10:03:00Z",
+        "kind": "released",
+        "decision": "release",
+        "runId": "run-1",
+        "actionHash": "7dc19557200fe0cc896c39135b6bc04df68a2bb55906e54f8ec2269c4ced94ff",
+        "ledgerRowHash": "8b70327979e8f4a026b63b270dc7e6989c594722b13c439f3a945863b593cad2",
+        "prevHash": "f5e4af42a100a88a52230b90c006f4307336034dd318440c4c3c5a75067939a7",
+        "hash": "d082dfaefb7ce5e8c389b884f334c75a82a7860b53e01caed2f6e540a6c3eb4e",
+        "preimage": "[\"traceable-receipt\",\"did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf\",3,\"2026-11-02T10:03:00Z\",\"released\",\"release\",\"run-1\",\"7dc19557200fe0cc896c39135b6bc04df68a2bb55906e54f8ec2269c4ced94ff\",\"8b70327979e8f4a026b63b270dc7e6989c594722b13c439f3a945863b593cad2\",\"f5e4af42a100a88a52230b90c006f4307336034dd318440c4c3c5a75067939a7\"]",
+        "signature": "k6FE5XJe2RPh9JWmWlJ1XJiLA0hd6roDYHQXDporY8oLjtQ3JB+ln+d83Sfcpej6ZM2tIOfJfDJ+8LdL+n2WDw=="
+      }
+    ],
+    "headSeq": 3,
+    "headHash": "d082dfaefb7ce5e8c389b884f334c75a82a7860b53e01caed2f6e540a6c3eb4e"
+  },
+  "proofs": {
+    "challenge": "5f3a9c0e1b2d4a6f8c7e9d0b1a2c3d4e",
+    "valid": {
+      "v": 1,
+      "type": "traceable-proof",
+      "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+      "challenge": "5f3a9c0e1b2d4a6f8c7e9d0b1a2c3d4e",
+      "audience": null,
+      "at": "2026-11-02T10:05:00Z",
+      "signature": "LYz81OI75HdAPXl0f3eQ8bac/sf+Qqivuf1/YbaPXNmzG3TJ40e1Rn4hVqSXSF8F62T6vTP+yBkHL2EjfNSCBw=="
+    },
+    "forgedChallenge": {
+      "proof": {
+        "v": 1,
+        "type": "traceable-proof",
+        "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        "challenge": "00000000000000000000000000000000",
+        "audience": null,
+        "at": "2026-11-02T10:05:00Z",
+        "signature": "LYz81OI75HdAPXl0f3eQ8bac/sf+Qqivuf1/YbaPXNmzG3TJ40e1Rn4hVqSXSF8F62T6vTP+yBkHL2EjfNSCBw=="
+      },
+      "expect": "invalid: signature does not cover this body"
+    },
+    "strangersKey": {
+      "proof": {
+        "v": 1,
+        "type": "traceable-proof",
+        "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        "challenge": "5f3a9c0e1b2d4a6f8c7e9d0b1a2c3d4e",
+        "audience": null,
+        "at": "2026-11-02T10:05:00Z",
+        "signature": "AC4krVI/fOoZX9LAYDXd2Ww7YP1Lv7O6GAihbkEewaM4bq1XzEgK3t2TKB2CHyReW2ftlIhQ/fjunLB6L+a5BQ=="
+      },
+      "expect": "invalid: signed by a key other than the id's"
+    }
+  },
+  "checkpoint": {
+    "leaf": "889723b1a4706a4600842fcbb25a21752a7dbff02ec9d8d0c891900b55c14f19",
+    "root": "e78e2091f27bdf5efbb798dedfc055b5c7cba9ba42f0cac4fd90ac4f02b094a5",
+    "statement": {
+      "v": 1,
+      "type": "traceable-checkpoint",
+      "at": "2026-11-02T11:00:00Z",
+      "agents": 1,
+      "receipts": 3,
+      "root": "e78e2091f27bdf5efbb798dedfc055b5c7cba9ba42f0cac4fd90ac4f02b094a5",
+      "prevRoot": null
+    },
+    "statementCanonical": "{\"agents\":1,\"at\":\"2026-11-02T11:00:00Z\",\"prevRoot\":null,\"receipts\":3,\"root\":\"e78e2091f27bdf5efbb798dedfc055b5c7cba9ba42f0cac4fd90ac4f02b094a5\",\"type\":\"traceable-checkpoint\",\"v\":1}",
+    "statementHash": "1354732a3c902f6e41320627f959e28af25322a906dfcb170fbac80f69c1d5da"
+  },
+  "join": {
+    "type": "traceable-join",
+    "at": "2026-11-02T10:00:00Z",
+    "owner": {
+      "id": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG",
+      "name": "Vector Owner",
+      "listed": true
+    },
+    "agent": {
+      "descriptor": {
+        "v": 1,
+        "type": "traceable-agent",
+        "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        "owner": "did:key:z6MkjchhfUsD6mmvni8mCdXHw216Xrm9bQe2mBH1P5RDjVJG",
+        "name": "vector-agent",
+        "kind": "agent",
+        "environment": "test",
+        "issuedAt": "2026-11-02T10:00:00Z",
+        "expiresAt": "2027-11-02T10:00:00Z"
+      },
+      "ownerSignature": "U09eKNAE/wji+ve+BnCPZtneMnE054Kj7ZutCbpSJ8cmPjODJhUV9rA8q7UUhcEuPbyjTmkR47fppSqC69Q6Cg=="
+    },
+    "signature": "U/AUfq4hRD1cDKhhiQo5Z4bl6rrZa07tPNrIGa77XF/LM1MTm+KrKb0Zqcwt8naWQB+/wZyTi9YkQc125pX0Bg=="
+  },
+  "recordScore": {
+    "formula": "100, less 30 x (held / actions), less 50 x (rejected / actions), less 10 if rejected in the last 90 days, less 10 if fewer than 20 actions; kept between 0 and 100; no score before the first action",
+    "cases": [
+      {
+        "actions": 0,
+        "held": 0,
+        "rejected": 0,
+        "rejected90": 0,
+        "score": null
+      },
+      {
+        "actions": 3,
+        "held": 1,
+        "rejected": 0,
+        "rejected90": 0,
+        "score": 80
+      },
+      {
+        "actions": 20,
+        "held": 0,
+        "rejected": 0,
+        "rejected90": 0,
+        "score": 100
+      },
+      {
+        "actions": 10,
+        "held": 2,
+        "rejected": 1,
+        "rejected90": 1,
+        "score": 69
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/receipt.json",
+  "title": "Traceable receipt (v1)",
+  "description": "One checked action. hash = sha256 over canonical JSON of the array [\"traceable-receipt\", id, seq, at, kind, decision, runId, actionHash, ledgerRowHash, prevHash]; signature = the agent key over the 32 hash bytes. prevHash of the first receipt is 64 zeros.",
+  "type": "object",
+  "required": [
+    "seq",
+    "at",
+    "kind",
+    "decision",
+    "ledgerRowHash",
+    "prevHash",
+    "hash",
+    "signature"
+  ],
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "kind": {
+      "type": "string",
+      "description": "held, released and rejected have meaning for the Record Score; others are the writer's."
+    },
+    "decision": {
+      "type": "string"
+    },
+    "runId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "actionHash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of the action's subject and input, kept by the owner; null when there was none."
+    },
+    "ledgerRowHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prevHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "signature": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Ed25519 signature, base64."
+    }
+  }
+}

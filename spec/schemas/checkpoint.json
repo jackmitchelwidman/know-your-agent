@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/checkpoint.json",
+  "title": "Public checkpoint statement (v1)",
+  "description": "leaf = sha256 of canonical [\"traceable-checkpoint-leaf\", id, headSeq, headHash], one per agent with a receipt, sorted by id; root = Merkle tree with sha256(left ++ right), odd last node paired with itself; sha256 of the canonical statement is anchored through OpenTimestamps.",
+  "type": "object",
+  "required": [
+    "v",
+    "type",
+    "at",
+    "agents",
+    "receipts",
+    "root"
+  ],
+  "properties": {
+    "v": {
+      "const": 1
+    },
+    "type": {
+      "const": "traceable-checkpoint"
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "agents": {
+      "type": "integer"
+    },
+    "receipts": {
+      "type": "integer"
+    },
+    "root": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "prevRoot": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

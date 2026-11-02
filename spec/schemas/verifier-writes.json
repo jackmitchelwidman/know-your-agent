@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/verifier-writes.json",
+  "title": "Writes by a system that issues IDs (v1)",
+  "description": "Bodies for POST /verifiers, /entries, /receipts, /entries/status. Each is signed by the verifier key over canonical JSON of the body without signature; at is the current time, accepted for ten minutes.",
+  "$defs": {
+    "register": {
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "name",
+        "at",
+        "signature"
+      ],
+      "properties": {
+        "type": {
+          "const": "traceable-verifier"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "website": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC."
+        },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": [
+        "verifier",
+        "at",
+        "owner",
+        "agent",
+        "signature"
+      ],
+      "properties": {
+        "verifier": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC."
+        },
+        "owner": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+              "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "listed": {
+              "type": "boolean"
+            }
+          }
+        },
+        "agent": {
+          "type": "object",
+          "required": [
+            "descriptor",
+            "ownerSignature"
+          ],
+          "properties": {
+            "descriptor": {
+              "$ref": "descriptor.json"
+            },
+            "ownerSignature": {
+              "type": "string",
+              "contentEncoding": "base64",
+              "description": "Ed25519 signature, base64."
+            },
+            "parentSignature": {
+              "type": "string",
+              "contentEncoding": "base64",
+              "description": "Ed25519 signature, base64."
+            }
+          }
+        },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        }
+      }
+    },
+    "receipts": {
+      "type": "object",
+      "required": [
+        "verifier",
+        "at",
+        "agent",
+        "receipts",
+        "signature"
+      ],
+      "properties": {
+        "verifier": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC."
+        },
+        "agent": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "receipts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "items": {
+            "$ref": "receipt.json"
+          }
+        },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "required": [
+        "verifier",
+        "at",
+        "agent",
+        "status",
+        "signature"
+      ],
+      "properties": {
+        "verifier": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC."
+        },
+        "agent": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "status": {
+          "enum": [
+            "retired",
+            "revoked"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "signature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        }
+      }
+    }
+  }
+}

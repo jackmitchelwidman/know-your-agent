@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/descriptor.json",
+  "title": "Traceable agent descriptor (v1)",
+  "description": "What the owner signs. Signed as canonical JSON (keys sorted recursively, no whitespace, UTF-8) with the owner's Ed25519 key; a child is also signed by the parent agent's key over the same bytes.",
+  "type": "object",
+  "required": [
+    "v",
+    "type",
+    "id",
+    "owner",
+    "name",
+    "kind",
+    "environment",
+    "issuedAt",
+    "expiresAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "v": {
+      "const": 1
+    },
+    "type": {
+      "const": "traceable-agent"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+    },
+    "owner": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "kind": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "description": "agent, human, service\u2026 the owner's word for what this is."
+    },
+    "environment": {
+      "enum": [
+        "production",
+        "test"
+      ],
+      "description": "Chosen at issue and fixed; a sub-agent takes its parent's."
+    },
+    "issuedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "parent": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "description": "The parent agent's did:key, for an agent made by another agent."
+    }
+  }
+}

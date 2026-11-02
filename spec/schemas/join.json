@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/join.json",
+  "title": "Direct join (v1)",
+  "description": "POST /api/v1/register/join. An owner enters its own agent. The whole body (minus signature) is signed by the owner key.",
+  "type": "object",
+  "required": [
+    "type",
+    "at",
+    "owner",
+    "agent",
+    "signature"
+  ],
+  "properties": {
+    "type": {
+      "const": "traceable-join"
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "owner": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "website": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "listed": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "required": [
+        "descriptor",
+        "ownerSignature"
+      ],
+      "properties": {
+        "descriptor": {
+          "$ref": "descriptor.json"
+        },
+        "ownerSignature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        },
+        "parentSignature": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Ed25519 signature, base64."
+        }
+      }
+    },
+    "signature": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Ed25519 signature, base64."
+    }
+  }
+}

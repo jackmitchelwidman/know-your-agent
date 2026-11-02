@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://traceableagents.org/schemas/v1/proof.json",
+  "title": "Traceable identity proof (v1)",
+  "description": "An agent's answer to a challenge. Canonical JSON of the body without signature, signed by the agent key. Good for ten minutes.",
+  "type": "object",
+  "required": [
+    "v",
+    "type",
+    "id",
+    "challenge",
+    "at",
+    "signature"
+  ],
+  "properties": {
+    "v": {
+      "const": 1
+    },
+    "type": {
+      "const": "traceable-proof"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+    },
+    "challenge": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 200,
+      "description": "The fresh random value the counterparty sent. The older name nonce is accepted."
+    },
+    "audience": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "signature": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Ed25519 signature, base64."
+    }
+  }
+}
