@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/receipt.json",
+  "$id": "https://know-your-agent.org/schemas/v1/receipt.json",
   "title": "Traceable receipt (v1)",
   "description": "One checked action. hash = sha256 over canonical JSON of the array [\"traceable-receipt\", id, seq, at, kind, decision, runId, actionHash, ledgerRowHash, prevHash]; signature = the agent key over the 32 hash bytes. prevHash of the first receipt is 64 zeros.",
   "type": "object",

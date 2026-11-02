@@ -11,7 +11,7 @@ import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.concurrent.duration._
 
-/** The Register of Traceable Agents, standalone. Configuration is the environment:
+/** The Know Your Agent register, standalone. Configuration is the environment:
   *   DATABASE_URL        postgresql://user:pass@host:5432/db   (required)
   *   PORT                8080
   *   SITE_DIR            ./site  (the pages; empty string serves the API only)

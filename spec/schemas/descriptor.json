@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/descriptor.json",
+  "$id": "https://know-your-agent.org/schemas/v1/descriptor.json",
   "title": "Traceable agent descriptor (v1)",
   "description": "What the owner signs. Signed as canonical JSON (keys sorted recursively, no whitespace, UTF-8) with the owner's Ed25519 key; a child is also signed by the parent agent's key over the same bytes.",
   "type": "object",

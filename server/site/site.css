@@ -1,4 +1,4 @@
-/* Traceable Agents. One stylesheet for every page. Set like an official register: black on white,
+/* Know Your Agent. One stylesheet for every page. Set like an official register: black on white,
    a formal masthead, hairline rules, numbered sections, plain text for status. */
 :root{
   --paper:#ffffff; --ink:#111111; --muted:#444444; --faint:#767676; --rule:#111111; --hair:#bdbdbd; --tint:#f4f4f2;

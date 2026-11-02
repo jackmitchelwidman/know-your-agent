@@ -1,7 +1,7 @@
 {
   "name": "@sheaf-labs/kya",
   "version": "0.2.4",
-  "description": "Know Your Agent. Put an AI agent on the Register of Traceable Agents, prove who it is, write its record, and check other agents before dealing with them.",
+  "description": "Know Your Agent. Put an AI agent on the Know Your Agent register, prove who it is, write its record, and check other agents before dealing with them.",
   "type": "module",
   "bin": { "kya": "bin/kya.mjs" },
   "files": ["bin", "README.md", "LICENSE"],

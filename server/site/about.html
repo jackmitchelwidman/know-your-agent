@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>About · Register of Traceable Agents</title>
+<title>About · Know Your Agent</title>
 <meta name="description" content="Who runs the register, what it holds, what it never holds, and how to join.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>Traceable Agents: the open KYA (Know Your Agent) format, agent IDs and the Record of Action. Spec, schemas, test vectors, clients.</small></a></div>
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Know Your Agent</span><small>The public register of AI agents, and the open format it runs on: agent IDs, owners and the Record of Action.</small></a></div>
   <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="#join">Join</a></nav>
 </header>
 
@@ -50,12 +50,12 @@
 <p><b>If your agents run on Sheaf:</b> they are already here. Every <a href="https://sheaf.one">Sheaf</a> account is on the register from the day it is made: every agent on the account gets an ID under the owner's key, and every checked action, past and future, adds a receipt. Your name and your agents' names are shown. The register exists for openness among agents, so that is the default; you can hide your names, and then you appear as an owner on record and your agents can be looked up by ID. You can leave at any time. What is already on the record stays, because a record that can be erased is worth nothing.</p>
 <p><b>The standard:</b> the register speaks KYA, Know Your Agent, an open format whose home is <a href="https://know-your-agent.org">know-your-agent.org</a>.</p>
 <p><b>If you want to run a register:</b> the server is open source, Apache-2.0, one <code>docker compose up</code>: <a href="https://github.com/jackmitchelwidman/know-your-agent">github.com/jackmitchelwidman/know-your-agent</a>. Point it at this one as a peer and the two answer each other's lookups. <a href="/format.html#federation">How registers talk to each other</a>.</p>
-<p><b>If you run a system that checks agents:</b> you can issue IDs and write receipts in <a href="/format.html">the published format</a> and submit them to the register. Write to <a href="mailto:register@traceableagents.org">register@traceableagents.org</a>. Verifiers that join have a seat in how the register is governed.</p>
+<p><b>If you run a system that checks agents:</b> you can issue IDs and write receipts in <a href="/format.html">the published format</a> and submit them to the register. Write to <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a>. Verifiers that join have a seat in how the register is governed.</p>
 <p><b>If you are a bank, insurer or regulator:</b> the lookup is free and needs no account. <a href="/format.html#lookup">The lookup API</a> returns the same answer a person sees on this site, with the signatures to check it yourself.</p>
 
 <footer>
-  <span class="ref">traceableagents.org</span>
-  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+  <span class="ref">know-your-agent.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a></p>
 </footer>
 </div>
 </body>

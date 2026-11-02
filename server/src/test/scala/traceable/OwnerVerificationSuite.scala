@@ -28,19 +28,22 @@ class OwnerVerificationSuite extends FunSuite {
 
   test("the TXT record matches quoted, split and spaced forms, and nothing else") {
     val tok = "0123456789abcdef0123456789abcdef"
-    assert(txtMatches(List("\"traceableagents-verify=" + tok + "\""), tok))
-    assert(txtMatches(List("other", "traceableagents-verify=" + tok), tok))
-    assert(txtMatches(List("\"traceableagents-verify=0123456789abcdef\" \"0123456789abcdef\""), tok))
-    assert(!txtMatches(List("traceableagents-verify=" + tok + "ff"), tok))
+    assert(txtMatches(List("\"kya-verify=" + tok + "\""), tok))
+    assert(txtMatches(List("other", "kya-verify=" + tok), tok))
+    assert(txtMatches(List("\"traceableagents-verify=" + tok + "\""), tok), "the pre-Nov-2026 record value still passes")
+    assert(txtMatches(List("\"kya-verify=0123456789abcdef\" \"0123456789abcdef\""), tok))
+    assert(!txtMatches(List("kya-verify=" + tok + "ff"), tok))
     assert(!txtMatches(Nil, tok))
-    assertEquals(recordName("example.com"), "_traceableagents.example.com")
+    assertEquals(recordName("example.com"), "_kya.example.com")
+    assertEquals(legacyRecordName("example.com"), "_traceableagents.example.com")
   }
 
   test("the well-known file matches the token line with BOM and whitespace, and not a different token") {
     val tok = "abc123"
-    assert(fileMatches("﻿traceableagents-verify=abc123\r\n", tok))
+    assert(fileMatches("﻿kya-verify=abc123\r\n", tok))
+    assert(fileMatches("traceableagents-verify=abc123\n", tok), "the old line still passes")
     assert(fileMatches("# ours\n  abc123  \n", tok))
-    assert(!fileMatches("traceableagents-verify=abc124", tok))
+    assert(!fileMatches("kya-verify=abc124", tok))
     assert(!fileMatches("<html>abc123</html>", tok))
   }
 

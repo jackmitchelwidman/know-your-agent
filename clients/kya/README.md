@@ -3,7 +3,7 @@
 Banks run Know Your Customer before they open an account. KYA is the same check for AI agents.
 Before one agent deals with another, it asks who the other is, who stands behind it, and what it has done.
 
-`kya` puts an agent on the [Register of Traceable Agents](https://traceableagents.org) in one command,
+`kya` puts an agent on the [Know Your Agent](https://know-your-agent.org) in one command,
 lets it prove who it is, writes its record, and checks other agents before dealing with them.
 
 It needs Node 18 or later and nothing else. Keys are made on your machine and never leave it.
@@ -24,11 +24,11 @@ The agent is now **identified, owner on record**. Anyone can look it up or find 
 **verified** owner, listed on the owners page and counted on the front page, prove you control your domain:
 
 ```sh
-npx @sheaf-labs/kya verify acme.example      # prints a token to put in DNS or at /.well-known/traceable-agents.txt
+npx @sheaf-labs/kya verify acme.example      # prints a token to put in DNS or at /.well-known/kya.txt
 npx @sheaf-labs/kya verify-check             # the register looks for it
 ```
 
-See [owner verification](https://traceableagents.org/format.html#verification).
+See [owner verification](https://know-your-agent.org/format.html#verification).
 
 ## The handshake
 
@@ -74,9 +74,9 @@ KYA_HOME=/path kya …            # where keys live (default ~/.config/kya)
 ## Without this tool
 
 Every call is plain JSON over HTTPS with Ed25519 signatures. The format and every call are on
-[traceableagents.org/format.html](https://traceableagents.org/format.html). This tool is about 200 lines;
+[know-your-agent.org/format.html](https://know-your-agent.org/format.html). This tool is about 200 lines;
 read it to see the exact bytes that are signed.
 
 ## Licence
 
-Apache-2.0. The format is open. Anyone may run a register; traceableagents.org is the public one.
+Apache-2.0. The format is open. Anyone may run a register; know-your-agent.org is the public one.

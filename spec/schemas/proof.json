@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/proof.json",
+  "$id": "https://know-your-agent.org/schemas/v1/proof.json",
   "title": "Traceable identity proof (v1)",
   "description": "An agent's answer to a challenge. Canonical JSON of the body without signature, signed by the agent key. Good for ten minutes.",
   "type": "object",

@@ -1,8 +1,8 @@
 // A worked client for the register's open door: another system issuing an ID and writing receipts.
-// Uses only Node's built-in Ed25519. Run: node verifier.mjs [https://traceableagents.org]
+// Uses only Node's built-in Ed25519. Run: node verifier.mjs [https://know-your-agent.org]
 import { generateKeyPairSync, sign, createHash, randomBytes } from "node:crypto";
 
-const BASE = process.argv[2] || "https://traceableagents.org";
+const BASE = process.argv[2] || "https://know-your-agent.org";
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const b58 = bytes => { let n = BigInt("0x" + Buffer.from(bytes).toString("hex")), s = ""; while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; } for (const b of bytes) { if (b !== 0) break; s = "1" + s; } return s; };
 const canonical = v => Array.isArray(v) ? "[" + v.map(canonical).join(",") + "]"

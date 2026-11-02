@@ -20,7 +20,7 @@ import TraceableAgents._
  *   statement  canonical {v:1, type:"traceable-checkpoint", at, agents, receipts, root, prevRoot}
  *   anchored   sha256(statement bytes), as a 32-byte digest, to the calendars
  */
-class TraceableCheckpointService[F[_]: Async: Logger](repo: TraceableAgentsRepository[F], ots: OtsClient[F], otsEnabled: Boolean, baseUrl: String = "https://traceableagents.org") {
+class TraceableCheckpointService[F[_]: Async: Logger](repo: TraceableAgentsRepository[F], ots: OtsClient[F], otsEnabled: Boolean, baseUrl: String = "https://know-your-agent.org") {
 
   def leafHash(did: String, seq: Long, hash: String): Array[Byte] =
     sha256(canonicalBytes(Json.arr(Json.fromString("traceable-checkpoint-leaf"), Json.fromString(did), Json.fromLong(seq), Json.fromString(hash))))

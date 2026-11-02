@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/join.json",
+  "$id": "https://know-your-agent.org/schemas/v1/join.json",
   "title": "Direct join (v1)",
   "description": "POST /api/v1/register/join. An owner enters its own agent. The whole body (minus signature) is signed by the owner key.",
   "type": "object",

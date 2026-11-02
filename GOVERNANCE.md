@@ -13,7 +13,7 @@ Nothing enters this repository without review by a maintainer.
 ## Registers
 
 Anyone may run a register from the server in this repository. A register is a public service that holds entries in
-this format and answers the lookup. The register at traceableagents.org is the first and, until the operators say
+this format and answers the lookup. The register at know-your-agent.org is the first and, until the operators say
 otherwise, the canonical one: the instance other systems check by default.
 
 Registers that speak the format can answer each other's lookups (see the format's section on registers that talk to
@@ -23,7 +23,7 @@ are what they share.
 
 ## Who decides
 
-Today: Sheaf Labs, which started the register, wrote the format and runs traceableagents.org.
+Today: Sheaf Labs, which started the register, wrote the format and runs know-your-agent.org.
 
 The plan: a body of the register's members. Every system that issues IDs and writes receipts (a verifier), and every
 operator that runs a register, gets a seat. Format changes, the list of registers, and the standing of verifiers are
@@ -32,13 +32,13 @@ door as everyone else's.
 
 ## Names
 
-"Traceable Agents", "Register of Traceable Agents", the seal and traceableagents.org identify the canonical register
+"Know Your Agent", "KYA", "Traceable Agents", the seal, know-your-agent.org and traceableagents.org identify the canonical register
 and its operator. The code and the format are open for anyone to use under their own name. See TRADEMARKS.md.
 
 ## Where things live
 
-The standard: <https://know-your-agent.org> and this repository. The canonical register: <https://traceableagents.org>.
+The standard: <https://know-your-agent.org> and this repository. The canonical register: <https://know-your-agent.org>.
 
 ## Contact
 
-register@traceableagents.org
+register@know-your-agent.org

@@ -12,7 +12,7 @@ import java.time.Instant
 
 
 /**
- * A public register of traceable agents (the code behind traceableagents.org). No account, no key. Answers one question about an
+ * A public register of traceable agents (the code behind know-your-agent.org). No account, no key. Answers one question about an
  * agent: who owns it, is it in standing, and what does its record hold. The answer carries
  * hashes, counts, verdict kinds, timestamps and signatures. Never the content of an action.
  */
@@ -330,7 +330,7 @@ object TraceableAgentsRoutes {
           "verifiers" -> "GET /api/v1/register/verifiers: the systems that issue IDs and write receipts here, and whether the register has approved them".asJson,
           "registerVerifier" -> "POST /api/v1/register/verifiers {type:'traceable-verifier', id (did:key), name, website?, at, signature}: signature is the key named in id over the body minus signature".asJson,
           "entry" -> "POST /api/v1/register/entries {verifier, at, owner:{id, name, listed?}, agent:{descriptor, ownerSignature, parentSignature?}, signature}: the descriptor exactly as above, signed by the owner's key; the whole body signed by the verifier's key".asJson,
-          "ownerVerify" -> "POST /api/v1/register/owners/verify {type:'traceable-verify', owner (did:key), domain, at, signature}: the owner key signs; returns the token to place in DNS (_traceableagents.<domain> TXT traceableagents-verify=<token>) or at /.well-known/traceable-agents.txt. Then POST /api/v1/register/owners/verify/check {type:'traceable-verify-check', owner, at, signature}".asJson,
+          "ownerVerify" -> "POST /api/v1/register/owners/verify {type:'traceable-verify', owner (did:key), domain, at, signature}: the owner key signs; returns the token to place in DNS (_kya.<domain> TXT kya-verify=<token>) or at /.well-known/kya.txt. Then POST /api/v1/register/owners/verify/check {type:'traceable-verify-check', owner, at, signature}".asJson,
           "join" -> "POST /api/v1/register/join {type:'traceable-join', at, owner:{id, name, website?, listed?}, agent:{descriptor, ownerSignature, parentSignature?}, signature}: the direct door, no system in between; the body is signed by the owner's key; the owner then writes receipts and standing for its own agents with verifier = its own id".asJson,
           "receipts" -> "POST /api/v1/register/receipts {verifier, at, agent, receipts:[{seq, at, kind, decision, runId?, actionHash?, ledgerRowHash, prevHash, hash, signature}], signature}: in chain order, seq from 1, prevHash the previous hash or 64 zeros, hash = sha256 of the receipt preimage, signature = the agent key over the hash bytes".asJson,
           "entryStatus" -> "POST /api/v1/register/entries/status {verifier, at, agent, status: retired|revoked, reason?, signature}".asJson,

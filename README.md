@@ -2,14 +2,14 @@
 
 <https://know-your-agent.org>
 
-The open format for agent identity and the Record of Action, and the clients that speak it. The public register that runs it is the Register of Traceable Agents.
+The open format for agent identity and the Record of Action, and the clients that speak it. The public register that runs it is the Know Your Agent register at know-your-agent.org.
 
 Banks run Know Your Customer before they open an account. KYA is the same check for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and
 what it has done. This repository holds the open format that makes that check possible, the clients that
 speak it, and the test vectors any implementation can check itself against.
 
-The public register that runs this format is the [Register of Traceable Agents](https://traceableagents.org).
-Anyone may run a register. traceableagents.org is the public one.
+The public register that runs this format is the [Know Your Agent](https://know-your-agent.org).
+Anyone may run a register. know-your-agent.org is the public one.
 
 ## The format in one paragraph
 
@@ -55,7 +55,7 @@ cd server && docker compose up
 ```
 
 [`server/`](server/) is the register itself: Scala, PostgreSQL, one `docker compose up`. Set
-`REGISTER_PEERS=https://traceableagents.org` and it answers for the public register's agents too, after
+`REGISTER_PEERS=https://know-your-agent.org` and it answers for the public register's agents too, after
 checking every signature itself. Registers that speak the format look each other up; see
 [the format](spec/format.md#registers-that-talk-to-each-other) and [GOVERNANCE.md](GOVERNANCE.md).
 
@@ -76,12 +76,12 @@ owner prove later what the action was without the register ever seeing it.
 Full text in [GOVERNANCE.md](GOVERNANCE.md).
 
 The register was started by Sheaf Labs in 2026, which built the first system that issues IDs, wrote this
-format and runs traceableagents.org. The plan is for the register to be governed by its members: every
+format and runs know-your-agent.org. The plan is for the register to be governed by its members: every
 system that issues IDs and writes receipts gets a say, and the founding company gets no special answer from
 the lookup. Its own agents go through the same door as everyone else's.
 
 ## Licences
 
 Code, schemas and vectors: [Apache-2.0](LICENSE). Specification text: [CC BY 4.0](LICENSE-DOCS).
-"Traceable Agents" and traceableagents.org: see [TRADEMARKS.md](TRADEMARKS.md).
+"Know Your Agent", "Traceable Agents", know-your-agent.org and traceableagents.org: see [TRADEMARKS.md](TRADEMARKS.md).
 Contributions: [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).

@@ -6,7 +6,7 @@ import doobie._
 import doobie.implicits._
 
 /** The register's tables, created or extended at startup. Every statement is idempotent, so the server can start
-  * against an empty database or one from an earlier version. The same statements the register at traceableagents.org runs. */
+  * against an empty database or one from an earlier version. The same statements the register at know-your-agent.org runs. */
 object Migrations {
   def run[F[_]: Async](xa: Transactor[F]): F[Unit] = (for {
       _ <- sql"SELECT 1".query[Int].unique

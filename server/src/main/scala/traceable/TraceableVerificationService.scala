@@ -137,7 +137,7 @@ class TraceableVerificationService[F[_]: Async: Logger](repo: TraceableVerificat
     }
 
   private def runCheck(host: String, tok: String): F[Either[String, String]] =
-    lookupTxt(recordName(host)).attempt.flatMap {
+    lookupTxt(recordName(host)).flatMap(vs => if (vs.nonEmpty) Async[F].pure(vs) else lookupTxt(legacyRecordName(host))).attempt.flatMap {
       case Right(vs) if txtMatches(vs, tok) => Async[F].pure(Right("dns"))
       case dnsOutcome => fetchWellKnown(host).map {
         case Right(body) if fileMatches(body, tok) => Right("file")
@@ -185,7 +185,7 @@ class TraceableVerificationService[F[_]: Async: Logger](repo: TraceableVerificat
           case Right(hh) => resolveSafe(hh).flatMap {
             case Left(e) => Async[F].pure(Left(e))
             case Right(_) =>
-              val req = Request[F](Method.GET, uri).putHeaders(Header.Raw(CIString("User-Agent"), "traceableagents.org owner check"))
+              val req = Request[F](Method.GET, uri).putHeaders(Header.Raw(CIString("User-Agent"), "know-your-agent.org owner check"))
               client.run(req).use { resp =>
                 if (resp.status.isSuccess) resp.body.take(8192).through(fs2.text.utf8.decode).compile.string.map(Right(_))
                 else if (resp.status.code / 100 == 3) resp.headers.get[Location].map(_.uri) match {
@@ -200,7 +200,9 @@ class TraceableVerificationService[F[_]: Async: Logger](repo: TraceableVerificat
           }
         }
       }
-    Uri.fromString("https://" + host + WellKnownPath).toOption.fold[F[Either[String, String]]](Async[F].pure(Left("bad host")))(go(_, 0))
+    def at(path: String) = Uri.fromString("https://" + host + path).toOption.fold[F[Either[String, String]]](Async[F].pure(Left("bad host")))(go(_, 0))
+    // The new file name first; the pre-Nov-2026 name still counts. The first error is the one reported.
+    at(WellKnownPath).flatMap { case r @ Right(_) => Async[F].pure(r); case first => at(LegacyWellKnownPath).map { case r @ Right(_) => r; case _ => first } }
   }
 
   /** Companies House: the company's registered name and status, by number. Basic auth with the key as the username. */

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""kya.py: a reference client for the Register of Traceable Agents, in Python.
+"""kya.py: a reference client for the Know Your Agent register, in Python.
 
 Needs Python 3.9+ and the `cryptography` package (pip install cryptography). Nothing else.
 
@@ -10,7 +10,7 @@ Needs Python 3.9+ and the `cryptography` package (pip install cryptography). Not
   python kya.py receipt <agent> --kind K --decision D [--action TEXT]
   python kya.py whoami
 
-Register: $KYA_REGISTER (default https://traceableagents.org). Keys: $KYA_HOME (default ~/.config/kya-py).
+Register: $KYA_REGISTER (default https://know-your-agent.org). Keys: $KYA_HOME (default ~/.config/kya-py).
 The exact bytes signed are the canonical JSON: keys sorted recursively, no whitespace, UTF-8.
 """
 import argparse, base64, hashlib, json, os, secrets, sys, urllib.request
@@ -18,7 +18,7 @@ from datetime import datetime, timezone, timedelta
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
-REGISTER = os.environ.get("KYA_REGISTER", "https://traceableagents.org").rstrip("/")
+REGISTER = os.environ.get("KYA_REGISTER", "https://know-your-agent.org").rstrip("/")
 HOME = os.environ.get("KYA_HOME") or os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "kya-py")
 B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 GENESIS = "0" * 64

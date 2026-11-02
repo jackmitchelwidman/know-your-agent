@@ -1,4 +1,4 @@
-// The owner key tool: hold your own key for the Register of Traceable Agents.
+// The owner key tool: hold your own key for the Know Your Agent register.
 //   node owner.mjs keygen            makes owner.key (keep it private) and prints your owner ID (did:key)
 //   node owner.mjs id                prints the owner ID of owner.key
 //   node owner.mjs sign              reads a descriptor (the exact text the console shows) from stdin, prints the signature

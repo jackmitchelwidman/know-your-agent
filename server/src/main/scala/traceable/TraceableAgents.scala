@@ -5,7 +5,7 @@ import org.bouncycastle.crypto.signers.Ed25519Signer
 import java.security.SecureRandom
 
 /**
- * Traceable Agents (traceableagents.org): the keys and identifiers behind every agent's ID.
+ * Traceable Agents (know-your-agent.org): the keys and identifiers behind every agent's ID.
  *
  *   owner     a customer's root key. Every agent ID ends at one. The owner signs each agent's
  *             descriptor, which is what makes the agent "identified" rather than a key anyone

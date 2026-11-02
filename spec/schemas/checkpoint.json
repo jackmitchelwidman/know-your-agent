@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/checkpoint.json",
+  "$id": "https://know-your-agent.org/schemas/v1/checkpoint.json",
   "title": "Public checkpoint statement (v1)",
   "description": "leaf = sha256 of canonical [\"traceable-checkpoint-leaf\", id, headSeq, headHash], one per agent with a receipt, sorted by id; root = Merkle tree with sha256(left ++ right), odd last node paired with itself; sha256 of the canonical statement is anchored through OpenTimestamps.",
   "type": "object",

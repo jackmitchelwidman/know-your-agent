@@ -122,7 +122,7 @@ class TraceableVerifierService[F[_]: Async](repo: TraceableAgentsRepository[F], 
   }
 
   /** Owner verification by the owner itself: {type:'traceable-verify', owner, domain, at, signature} claims a domain and
-    * returns the token to place in DNS or at /.well-known/traceable-agents.txt. */
+    * returns the token to place in DNS or at /.well-known/kya.txt. */
   def verifyDomain(body: Json): F[Either[String, Json]] = verification match {
     case None => Async[F].pure(Left("owner verification is not configured on this register"))
     case Some(vs) => ownerSigned(body).flatMap {
@@ -130,7 +130,7 @@ class TraceableVerifierService[F[_]: Async](repo: TraceableAgentsRepository[F], 
       case Right(o) => body.hcursor.get[String]("domain").toOption.map(_.trim).filter(_.nonEmpty) match {
         case None => Async[F].pure(Left("domain is missing"))
         case Some(d) => vs.claimDomain(o.customerId, d).map(_.map(j => Json.obj("owner" -> o.did.asJson, "verification" -> j,
-          "next" -> "Put the token in a DNS TXT record at _traceableagents.<domain> as traceableagents-verify=<token>, or serve it as a line at https://<domain>/.well-known/traceable-agents.txt. Then call /owners/verify/check.".asJson)))
+          "next" -> "Put the token in a DNS TXT record at _kya.<domain> as kya-verify=<token>, or serve it as a line at https://<domain>/.well-known/kya.txt. Then call /owners/verify/check.".asJson)))
       }
     }
   }

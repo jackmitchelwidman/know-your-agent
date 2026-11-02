@@ -1,7 +1,7 @@
-# The Traceable Agents format, version 1
+# The Know Your Agent (KYA) format, version 1
 
-This is the format behind KYA, Know Your Agent, as served by the [Register of Traceable Agents](https://traceableagents.org)
-at <https://traceableagents.org/format.html>. The register's own `GET /api/v1/register/format` returns the same definitions
+This is the format behind KYA, Know Your Agent, as served by the [Know Your Agent register](https://know-your-agent.org)
+at <https://know-your-agent.org/format.html>. The register's own `GET /api/v1/register/format` returns the same definitions
 as JSON. JSON Schemas for each object are in [`schemas/`](schemas/) and signed test vectors in [`vectors/`](vectors/).
 
 Text: CC BY 4.0. Schemas and vectors: Apache-2.0.
@@ -67,13 +67,13 @@ Because each receipt names the one before it, nothing can be removed or reordere
 
 Free, no account. All responses are JSON and allow cross-origin reads.
 
-    GET https://traceableagents.org/api/v1/register/lookup?id=<did or fingerprint>
-    GET https://traceableagents.org/api/v1/register/agents/<id>
-    GET https://traceableagents.org/api/v1/register/agents/<id>/receipts?limit=50&before=<seq>
-    GET https://traceableagents.org/api/v1/register/agents/<id>/verify
-    GET https://traceableagents.org/api/v1/register/owners/<owner did>
-    GET https://traceableagents.org/api/v1/register/stats
-    GET https://traceableagents.org/api/v1/register/format
+    GET https://know-your-agent.org/api/v1/register/lookup?id=<did or fingerprint>
+    GET https://know-your-agent.org/api/v1/register/agents/<id>
+    GET https://know-your-agent.org/api/v1/register/agents/<id>/receipts?limit=50&before=<seq>
+    GET https://know-your-agent.org/api/v1/register/agents/<id>/verify
+    GET https://know-your-agent.org/api/v1/register/owners/<owner did>
+    GET https://know-your-agent.org/api/v1/register/stats
+    GET https://know-your-agent.org/api/v1/register/format
 
 The lookup answers with `status` (`identified` or `unknown`), a one-line `answer`, the agent, the owner with its verification state, the record's counts and chain head, and a `proof` block with the descriptor, the owner's signature and both public keys. `verify` recomputes the whole chain on the server and reports any problem; you can do the same yourself from `receipts`.
 
@@ -86,9 +86,9 @@ Before agent A acts for or with agent B, two calls settle who B is and what its 
 
 <!-- end list -->
 
-    POST https://traceableagents.org/api/v1/register/check
+    POST https://know-your-agent.org/api/v1/register/check
     {"proof": {…the document B gave A…}, "challenge": "…what A sent B…"}
-    POST https://traceableagents.org/api/v1/register/check
+    POST https://know-your-agent.org/api/v1/register/check
     {"id": "<did or fingerprint>"}            (a lookup without a proof)
 
 The proof is `{v:1, type:"traceable-proof", id, challenge, audience?, at}` in canonical JSON, signed by the agent key (Ed25519, base64 in `signature`), good for ten minutes. The answer adds `identityProof` (`checked`, `valid`, `reason`) and a one-paragraph `summary` in plain words. What A does with the answer is A's own policy; a verifier that runs A records the check on A's record, so a counterparty check is itself an act the record shows.
@@ -168,16 +168,18 @@ Anyone may run a register from the published server. Registers that speak this f
   - What the answer says  
     Every answer carries `register:{url, name, id}`, the register that holds the entry. A forwarded answer also carries `federated:true`, `verifiedHere:true` and `askedBy`, the register you asked.
 
-The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its `self` and asking the existing operators to list it as a peer. How that is decided is in the [governance note](https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md).
+The register at know-your-agent.org is the canonical one: the instance systems check by default. A second operator joins by publishing its `self` and asking the existing operators to list it as a peer. How that is decided is in the [governance note](https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md).
 
 ## Owner verification
 
 An owner is **verified** when it has proved control of a domain, or when the register's keeper has reviewed it. The proof of a domain is a token the register gives the owner, placed where only the domain's controller can put it:
 
   - A DNS record  
-    `_traceableagents.<domain>`  TXT  `"traceableagents-verify=<token>"`
+    `_kya.<domain>`  TXT  `"kya-verify=<token>"`
   - Or a file  
-    `https://<domain>/.well-known/traceable-agents.txt` containing the line `traceableagents-verify=<token>`
+    `https://<domain>/.well-known/kya.txt` containing the line `kya-verify=<token>`
+
+The names used before November 2026, `_traceableagents.<domain>` with `traceableagents-verify=<token>` and `/.well-known/traceable-agents.txt`, are still honoured. A register checks the new name first and the old one after it.
 
 Beneath verified sits a weaker mark, **email confirmed**: the owner signed in with a code sent to its email address, so the register knows the address is real and in the owner's hands. It says nothing about who the owner is. The address itself is never shown. An owner with no domain and no company, an individual for instance, carries this mark until it proves a domain or is reviewed.
 

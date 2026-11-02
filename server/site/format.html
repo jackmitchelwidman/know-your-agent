@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>The format · Register of Traceable Agents</title>
+<title>The format · Know Your Agent</title>
 <meta name="description" content="The ID, descriptor, receipt and lookup formats of the register, version 1.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>Traceable Agents: the open KYA (Know Your Agent) format, agent IDs and the Record of Action. Spec, schemas, test vectors, clients.</small></a></div>
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Know Your Agent</span><small>The public register of AI agents, and the open format it runs on: agent IDs, owners and the Record of Action.</small></a></div>
   <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="/about.html#join">Join</a></nav>
 </header>
 
@@ -55,13 +55,13 @@
 
 <h2 id="lookup">The lookup</h2>
 <p>Free, no account. All responses are JSON and allow cross-origin reads.</p>
-<pre>GET https://traceableagents.org/api/v1/register/lookup?id=&lt;did or fingerprint&gt;
-GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;
-GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;/receipts?limit=50&amp;before=&lt;seq&gt;
-GET https://traceableagents.org/api/v1/register/agents/&lt;id&gt;/verify
-GET https://traceableagents.org/api/v1/register/owners/&lt;owner did&gt;
-GET https://traceableagents.org/api/v1/register/stats
-GET https://traceableagents.org/api/v1/register/format</pre>
+<pre>GET https://know-your-agent.org/api/v1/register/lookup?id=&lt;did or fingerprint&gt;
+GET https://know-your-agent.org/api/v1/register/agents/&lt;id&gt;
+GET https://know-your-agent.org/api/v1/register/agents/&lt;id&gt;/receipts?limit=50&amp;before=&lt;seq&gt;
+GET https://know-your-agent.org/api/v1/register/agents/&lt;id&gt;/verify
+GET https://know-your-agent.org/api/v1/register/owners/&lt;owner did&gt;
+GET https://know-your-agent.org/api/v1/register/stats
+GET https://know-your-agent.org/api/v1/register/format</pre>
 <p>The lookup answers with <code>status</code> (<code>identified</code> or <code>unknown</code>), a one-line <code>answer</code>, the agent, the owner with its verification state, the record's counts and chain head, and a <code>proof</code> block with the descriptor, the owner's signature and both public keys. <code>verify</code> recomputes the whole chain on the server and reports any problem; you can do the same yourself from <code>receipts</code>.</p>
 
 <h2 id="handshake">The handshake</h2>
@@ -70,9 +70,9 @@ GET https://traceableagents.org/api/v1/register/format</pre>
   <li><b>A sends B a challenge.</b> Any fresh random string, used once. B asks its verifier to sign it with B's key: the key stays with the verifier, so B's runtime never holds it. B hands the signed proof back to A.</li>
   <li><b>A checks the proof and reads the record.</b> One call to the register, with the proof and the challenge A issued. The answer is the lookup above, plus whether the proof is B's.</li>
 </ol>
-<pre>POST https://traceableagents.org/api/v1/register/check
+<pre>POST https://know-your-agent.org/api/v1/register/check
 {"proof": {…the document B gave A…}, "challenge": "…what A sent B…"}
-POST https://traceableagents.org/api/v1/register/check
+POST https://know-your-agent.org/api/v1/register/check
 {"id": "&lt;did or fingerprint&gt;"}            (a lookup without a proof)</pre>
 <p>The proof is <code>{v:1, type:"traceable-proof", id, challenge, audience?, at}</code> in canonical JSON, signed by the agent key (Ed25519, base64 in <code>signature</code>), good for ten minutes. The answer adds <code>identityProof</code> (<code>checked</code>, <code>valid</code>, <code>reason</code>) and a one-paragraph <code>summary</code> in plain words. What A does with the answer is A's own policy; a verifier that runs A records the check on A's record, so a counterparty check is itself an act the record shows.</p>
 
@@ -126,13 +126,13 @@ POST https://traceableagents.org/api/v1/register/check
   <dt>Trust</dt><dd>A peer can report; it cannot vouch. This register uses a peer's answer only after it has re-checked, from the public keys inside the answer, that <code>ownerSignature</code> is the owner key's over the canonical descriptor and that <code>descriptor.owner</code> is that key. An answer that fails the check is treated as not found. The standing, counts and Record Score in a forwarded answer are the peer's report and are marked as such.</dd>
   <dt>What the answer says</dt><dd>Every answer carries <code>register:{url, name, id}</code>, the register that holds the entry. A forwarded answer also carries <code>federated:true</code>, <code>verifiedHere:true</code> and <code>askedBy</code>, the register you asked.</dd>
 </dl>
-<p>The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its <code>self</code> and asking the existing operators to list it as a peer. How that is decided is in the <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">governance note</a>.</p>
+<p>The register at know-your-agent.org is the canonical one: the instance systems check by default. A second operator joins by publishing its <code>self</code> and asking the existing operators to list it as a peer. How that is decided is in the <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">governance note</a>.</p>
 
 <h2 id="verification">Owner verification</h2>
 <p>An owner is <b>verified</b> when it has proved control of a domain, or when the register's keeper has reviewed it. The proof of a domain is a token the register gives the owner, placed where only the domain's controller can put it:</p>
 <dl>
-  <dt>A DNS record</dt><dd><code>_traceableagents.&lt;domain&gt;</code> &nbsp;TXT&nbsp; <code>"traceableagents-verify=&lt;token&gt;"</code></dd>
-  <dt>Or a file</dt><dd><code>https://&lt;domain&gt;/.well-known/traceable-agents.txt</code> containing the line <code>traceableagents-verify=&lt;token&gt;</code></dd>
+  <dt>A DNS record</dt><dd><code>_kya.&lt;domain&gt;</code> &nbsp;TXT&nbsp; <code>"kya-verify=&lt;token&gt;"</code></dd>
+  <dt>Or a file</dt><dd><code>https://&lt;domain&gt;/.well-known/kya.txt</code> containing the line <code>kya-verify=&lt;token&gt;</code></dd>
 </dl>
 <p>Beneath verified sits a weaker mark, <b>email confirmed</b>: the owner signed in with a code sent to its email address, so the register knows the address is real and in the owner's hands. It says nothing about who the owner is. The address itself is never shown. An owner with no domain and no company, an individual for instance, carries this mark until it proves a domain or is reviewed.</p>
 <p>An owner that entered its own agents claims and checks its domain with two signed calls: <code>POST /api/v1/register/owners/verify</code> with <code>{type:"traceable-verify", owner, domain, at, signature}</code> returns the token; <code>POST /api/v1/register/owners/verify/check</code> with <code>{type:"traceable-verify-check", owner, at, signature}</code> looks for it. The tool does this as <code>kya verify &lt;domain&gt;</code> and <code>kya verify-check</code>.</p>
@@ -142,8 +142,8 @@ POST https://traceableagents.org/api/v1/register/check
 <p>Incarnations (a session key per run, including a run restored from a saved context) and yearly renewal. These are designed and come next. The ID and receipt formats above will not change under them.</p>
 
 <footer>
-  <span class="ref">traceableagents.org</span>
-  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+  <span class="ref">know-your-agent.org</span>
+  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a></p>
 </footer>
 </div>
 </body>

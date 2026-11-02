@@ -6,7 +6,7 @@ import org.http4s._
 import org.http4s.dsl.Http4sDsl
 
 /** The register's pages, served from a directory: / → index.html, /a/<id> → agent.html, /o/<did> → owner.html,
-  * anything else → the file of that name, else 404.html. The same mapping traceableagents.org uses. */
+  * anything else → the file of that name, else 404.html. The same mapping know-your-agent.org uses. */
 object Site {
   def routes[F[_]: Async](dir: String): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F] {}

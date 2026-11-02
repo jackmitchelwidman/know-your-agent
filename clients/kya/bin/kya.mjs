@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// kya: Know Your Agent. Put an AI agent on the Register of Traceable Agents, prove who it is,
+// kya: Know Your Agent. Put an AI agent on the Know Your Agent register, prove who it is,
 // write its record, and check other agents before dealing with them.
 //
 // Needs Node 18 or later and nothing else. Keys are made here and never leave this machine
-// except as public keys and signatures. The register is https://traceableagents.org; set
+// except as public keys and signatures. The register is https://know-your-agent.org; set
 // KYA_REGISTER to use another one. Keys live in ~/.config/kya; set KYA_HOME to move them.
 import { generateKeyPairSync, createPrivateKey, sign, createHash, randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, chmodSync } from "node:fs";
 import { join as pathJoin } from "node:path";
 import { homedir } from "node:os";
 
-const REGISTER = (process.env.KYA_REGISTER || "https://traceableagents.org").replace(/\/$/, "");
+const REGISTER = (process.env.KYA_REGISTER || "https://know-your-agent.org").replace(/\/$/, "");
 const HOME = process.env.KYA_HOME || pathJoin(process.env.XDG_CONFIG_HOME || pathJoin(homedir(), ".config"), "kya");
 const AGENTS = pathJoin(HOME, "agents");
 
@@ -60,7 +60,7 @@ const [cmd, ...rest] = words;
 function die(msg) { console.error(msg); process.exit(1); }
 function out(v) { console.log(typeof v === "string" ? v : JSON.stringify(v, null, 2)); }
 
-const HELP = `kya: Know Your Agent. The Register of Traceable Agents from the command line.
+const HELP = `kya: Know Your Agent. The Know Your Agent from the command line.
 
   kya init --owner "Name" [--website https://…] [--hidden]
         Make your owner key. You sign for your agents with it. Keep it; a lost key cannot be replaced.
@@ -201,8 +201,8 @@ async function verify() {
   const r = await post("/api/v1/register/owners/verify", signed(o.key, { type: "traceable-verify", owner: didOf(o.key), domain, at: now() }));
   const d = (r.verification || {}).domain || {}; const rec = d.record || {}; const file = d.file || {};
   out(`Claimed ${domain}. Put this where only the domain's controller can:`);
-  out(`  DNS:  ${rec.name || "_traceableagents." + domain}  TXT  "${rec.value || ""}"`);
-  out(`  or:   ${file.url || "https://" + domain + "/.well-known/traceable-agents.txt"} containing the line ${file.content || rec.value || ""}`);
+  out(`  DNS:  ${rec.name || "_kya." + domain}  TXT  "${rec.value || ""}"`);
+  out(`  or:   ${file.url || "https://" + domain + "/.well-known/kya.txt"} containing the line ${file.content || rec.value || ""}`);
   out(`Then run: kya verify-check`);
   if (flags.json) out(r);
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://traceableagents.org/schemas/v1/verifier-writes.json",
+  "$id": "https://know-your-agent.org/schemas/v1/verifier-writes.json",
   "title": "Writes by a system that issues IDs (v1)",
   "description": "Bodies for POST /verifiers, /entries, /receipts, /entries/status. Each is signed by the verifier key over canonical JSON of the body without signature; at is the current time, accepted for ten minutes.",
   "$defs": {

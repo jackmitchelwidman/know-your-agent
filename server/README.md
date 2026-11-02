@@ -1,6 +1,6 @@
 # The register server
 
-A standalone Register of Traceable Agents: the same code that runs traceableagents.org, with nothing of
+A standalone Know Your Agent: the same code that runs know-your-agent.org, with nothing of
 Sheaf in it. Scala 3, http4s, PostgreSQL. It issues nothing itself and never holds a private key: owners
 enter their agents through `/join` (the `kya` tool) and systems that run agents write through the verifier
 door, all with signatures the register checks from public keys.
@@ -23,7 +23,7 @@ Without Docker: `sbt run` with `DATABASE_URL` set (see `Main.scala` for every se
 
 ## The pages
 
-`site/` is a copy of traceableagents.org's pages. The masthead takes your register's name from
+`site/` is a copy of know-your-agent.org's pages. The masthead takes your register's name from
 `REGISTER_NAME` at load, but the About page, the footer ("Kept by Sheaf Labs") and the Join text describe
 the canonical register. Replace them with your own before you publish: the names and seal of the canonical
 register are not yours to use (see [TRADEMARKS.md](../TRADEMARKS.md)). Set `SITE_DIR=` empty to serve the
@@ -48,9 +48,9 @@ The tables are created at startup; every statement is idempotent.
 
 ## Join the network
 
-Set `REGISTER_PEERS=https://traceableagents.org` and your register answers for every agent on the
+Set `REGISTER_PEERS=https://know-your-agent.org` and your register answers for every agent on the
 public one as well as its own, after re-checking each signature itself. To be asked in return, publish
-your `GET /api/v1/register/self` and write to register@traceableagents.org; see
+your `GET /api/v1/register/self` and write to register@know-your-agent.org; see
 [GOVERNANCE.md](../GOVERNANCE.md).
 
 ## What is in here

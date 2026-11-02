@@ -16,7 +16,7 @@ services:
       PORT: 8080
       REGISTER_NAME: "My register"
       REGISTER_SELF_URL: http://localhost:8080
-      # REGISTER_PEERS: https://traceableagents.org
+      # REGISTER_PEERS: https://know-your-agent.org
       # OTS_ENABLED: "true"
       # COMPANIES_HOUSE_API_KEY: ""
     ports: ["8080:8080"]

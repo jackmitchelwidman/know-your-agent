@@ -9,11 +9,15 @@ import java.net.{IDN, InetAddress}
  * public page reads it without another query.
  */
 object OwnerVerification {
-  /** The DNS record the owner adds: `_traceableagents.<domain>  TXT  "traceableagents-verify=<token>"`. */
-  val RecordPrefix = "_traceableagents."
-  val ValuePrefix  = "traceableagents-verify="
-  /** The file the owner can place instead: `https://<domain>/.well-known/traceable-agents.txt` with the same line. */
-  val WellKnownPath = "/.well-known/traceable-agents.txt"
+  /** The DNS record the owner adds: `_kya.<domain>  TXT  "kya-verify=<token>"`. */
+  val RecordPrefix = "_kya."
+  val ValuePrefix  = "kya-verify="
+  /** The file the owner can place instead: `https://<domain>/.well-known/kya.txt` with the same line. */
+  val WellKnownPath = "/.well-known/kya.txt"
+  /** The names used before Nov 2 2026, when the register lived at traceableagents.org. Still honoured. */
+  val LegacyRecordPrefix = "_traceableagents."
+  val LegacyValuePrefix  = "traceableagents-verify="
+  val LegacyWellKnownPath = "/.well-known/traceable-agents.txt"
   /** A verified domain is rechecked daily; it is dropped only after this long without a passing check. */
   val GraceDays = 45
 
@@ -46,17 +50,19 @@ object OwnerVerification {
 
   def token(): String = { val r = new java.security.SecureRandom(); val b = new Array[Byte](16); r.nextBytes(b); b.map("%02x".format(_)).mkString }
   def recordName(host: String): String = RecordPrefix + host
+  def legacyRecordName(host: String): String = LegacyRecordPrefix + host
   def recordValue(tok: String): String = ValuePrefix + tok
+  private def accepted(tok: String): Set[String] = Set(ValuePrefix + tok, LegacyValuePrefix + tok)
 
   /** A TXT answer as the resolver gives it: possibly quoted, possibly split into several quoted strings. */
   def txtMatches(values: List[String], tok: String): Boolean = {
-    val want = recordValue(tok)
-    values.exists(v => v.replace("\"", "").replaceAll("\\s+", "") == want)
+    val want = accepted(tok)
+    values.exists(v => want(v.replace("\"", "").replaceAll("\\s+", "")))
   }
 
-  /** The well-known file: the line `traceableagents-verify=<token>` (or the bare token); BOM and whitespace tolerated. */
+  /** The well-known file: the line `kya-verify=<token>` (the old `traceableagents-verify=` form, or the bare token, also pass); BOM and whitespace tolerated. */
   def fileMatches(body: String, tok: String): Boolean =
-    body.replace("﻿", "").linesIterator.map(_.trim).exists(l => l == recordValue(tok) || l == tok)
+    body.replace("﻿", "").linesIterator.map(_.trim).exists(l => accepted(tok)(l) || l == tok)
 
   /** Companies House numbers are 8 characters: digit-only ones are padded with leading zeros, letter prefixes (SC, NI, OC, ...) kept. */
   def normaliseCompanyNumber(raw: String): Either[String, String] = {

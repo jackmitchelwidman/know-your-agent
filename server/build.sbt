@@ -1,4 +1,4 @@
-// The Register of Traceable Agents: a standalone server for the KYA format.
+// The Know Your Agent: a standalone server for the KYA format.
 val Http4sVersion = "0.23.27"
 val CirceVersion  = "0.14.7"
 val DoobieVersion = "1.0.0-RC4"

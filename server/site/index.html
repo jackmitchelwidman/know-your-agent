@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Register of Traceable Agents</title>
-<meta name="description" content="A public register of AI agents. Every agent on it has an ID, an owner, and a record of what it has done. Look an agent up before you deal with it.">
+<title>Know Your Agent · the register of AI agents</title>
+<meta name="description" content="Know Your Agent: the public register of AI agents and the open format behind it. Every agent on it has an ID, an owner, and a record of what it has done. Look an agent up before you deal with it, or put your own on in two commands.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css">
@@ -13,12 +13,12 @@
 <body>
 <div class="wrap">
 <header class="top">
-  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Register of Traceable Agents</span><small>Traceable Agents: the open KYA (Know Your Agent) format, agent IDs and the Record of Action. Spec, schemas, test vectors, clients.</small></a></div>
+  <div class="masthead"><span class="seal" aria-hidden="true"><svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="28" cy="28" r="22" fill="none" stroke="currentColor" stroke-width=".8"/><path d="M19 17h18v22H19z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M23 23h10M23 28h10M23 33h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M33 36l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><a class="brand" href="/"><span class="title">Know Your Agent</span><small>The public register of AI agents, and the open format it runs on: agent IDs, owners and the Record of Action.</small></a></div>
   <nav class="top"><a href="/">Search</a><a href="/owners.html">Owners</a><a href="/handshake.html">The handshake</a><a href="/about.html">About</a><a href="/format.html">The format</a><a href="/about.html#join">Join</a></nav>
 </header>
 
-<h1>Search the register.</h1>
-<p class="lede">Every agent on this register has an ID, an owner who signed for it, and a record of what it has done. Paste an agent's ID, or type the name of an owner or an agent, to see who stands behind it and whether its record is clean.</p>
+<h1>Know Your Agent.</h1>
+<p class="lede">Banks run Know Your Customer before they open an account. This is the same check for AI agents. Every agent on this register has an ID, an owner who signed for it, and a record of what it has done. Paste an agent's ID, or type the name of an owner or an agent, to see who stands behind it and whether its record is clean.</p>
 
 <form class="card" id="f" action="/" method="get">
   <div class="row">
@@ -37,14 +37,12 @@
 <p class="note" id="s-test" hidden style="margin:6px 0 0"></p>
 <p class="note" id="s-cp" hidden style="margin:6px 0 0"></p>
 
-<h2>1. How the register works</h2>
-<ol class="steps">
-  <li><b>An owner signs for the agent.</b> The owner is a company or a person. They hold a root key and sign each agent's ID with it. An ID with no owner's signature counts as unknown.</li>
-  <li><b>Every action adds a receipt.</b> Each time the agent acts through a verifier, the verifier adds a signed receipt to the agent's record: what kind of action, what the verdict was, and when. The agent's own software needs no change; the verifier it already acts through writes the receipt. The content of the action stays with the owner. The register holds only hashes.</li>
-  <li><b>Anyone can check.</b> Before your systems deal with an agent, look it up. The answer, the owner's signature and the whole receipt chain can be checked from the public keys alone. You do not have to trust this site.</li>
-</ol>
+<h2>1. Put an agent on the register</h2>
+<pre><code>npx @sheaf-labs/kya init --owner "Your name or company"
+npx @sheaf-labs/kya join your-agent</code></pre>
+<p>Two commands, no account. The keys are made on your machine and stay there. The register sees only public keys and signatures. Your agent then has an ID anyone can check, with you as the owner on record. Prove you control your domain with <code>kya verify your-domain</code> and you are a verified owner. Any system that runs or checks AI agents can also issue IDs and write receipts in the published format. The first one is <a href="https://sheaf.one">Sheaf</a>: every Sheaf account is on the register from the day it is made. An owner can hide its names or leave at any time. <a href="/about.html#join">How to join.</a></p>
 
-<h2>2. What a determination means</h2>
+<h2>2. What a check answers</h2>
 <div class="card">
   <dl>
     <dt><span class="pill">Identified, owner verified</span></dt><dd>An owner signed for this agent and has proved who it is: it controls the domain it named (a token placed in the domain's DNS or on its website), or the register's keeper has reviewed it. A Companies House entry may be attached to a proved domain.</dd>
@@ -52,14 +50,22 @@
     <dt><span class="pill bad">Unknown</span></dt><dd>No agent with this ID is on the register. Treat it as anonymous.</dd>
   </dl>
 </div>
-<p class="note">What an agent may do with each answer is your decision. A bank might let an unknown agent read a price list and nothing more.</p>
+<p class="note">Every answer comes with the agent's Record of Action: what it has done, how often a person stopped it, and a score anyone can recompute from the receipts. What an agent may do with each answer is your decision. A bank might let an unknown agent read a price list and nothing more.</p>
 
-<h2>3. Entering your agents on the register</h2>
-<p>Anyone who owns an agent can enter it, in one command: <code>npx @sheaf-labs/kya join &lt;agent-name&gt;</code>. The tool makes the keys on your machine, you sign for the agent as its owner, and the register records it. Any system that runs or checks AI agents can also issue IDs and write receipts in the published format. The first one is <a href="https://sheaf.one">Sheaf</a>: every Sheaf account is on the register from the day it is made, each of its agents gets an ID under the owner's own key, and every checked action, past and future, is a receipt on the agent's record. An owner can hide its names or leave at any time. <a href="/about.html#join">How to join.</a></p>
+<h2>3. How the register works</h2>
+<ol class="steps">
+  <li><b>An ID is a key.</b> An agent's ID is its public key. Any program can make a key; what it cannot make is an owner's signature over it. The owner is a company or a person. They hold a root key and sign each agent's ID with it. An ID with no owner's signature counts as unknown.</li>
+  <li><b>Every action adds a receipt.</b> Each time the agent acts through a verifier, the verifier adds a signed receipt to the agent's record: what kind of action, what the verdict was, and when. Each receipt names the one before it. The content of the action stays with the owner. The register holds only hashes.</li>
+  <li><b>Anyone can check.</b> Before your systems deal with an agent, look it up. One agent can also challenge another directly: A sends B a challenge, B signs it, A asks the register. Under two seconds, and both records gain a receipt. <a href="/handshake.html">See the handshake.</a> The answer, the owner's signature and the whole receipt chain can be checked from the public keys alone. You do not have to trust this site.</li>
+</ol>
+
+<h2>4. Open, and nobody's</h2>
+<p>The format, the signed test vectors, the <code>kya</code> tool, a Python client and this register's server are published under Apache-2.0 at <a href="https://github.com/jackmitchelwidman/know-your-agent">github.com/jackmitchelwidman/know-your-agent</a>. Anyone may run a register from it with <code>docker compose up</code>. Registers that speak the format answer each other's lookups, so an agent entered on one can be checked from another. Each register re-checks the signatures itself and trusts no peer's word.</p>
+<p>This register is the first one. It was started by Sheaf Labs, which wrote the format and runs it today. The plan is a body of the register's members, in which every operator and every system that issues IDs has a seat. <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">How that works.</a> To check your own implementation, clone the repository and run <code>node know-your-agent/spec/vectors/verify.mjs</code>: fixed keys and signed objects for every part of the format. <a href="/format.html">Read the format.</a></p>
 
 <footer>
-  <span class="ref">traceableagents.org</span>
-  <p>Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@traceableagents.org">register@traceableagents.org</a></p>
+  <span class="ref">know-your-agent.org</span>
+  <p>The format text is CC BY 4.0; code, schemas and vectors are Apache-2.0. Kept by <a href="https://sheaf.one/labs.html">Sheaf Labs</a> pending incorporation of the register as a body governed by its members. Entries are signed by their owners and can be checked from the public keys alone. The register holds hashes, verdicts and times. It never holds the content of an action.<br><a href="/about.html">About the register</a> · <a href="/format.html">The format</a> · <a href="/owners.html">Owners</a> · <a href="mailto:register@know-your-agent.org">register@know-your-agent.org</a></p>
 </footer>
 </div>
 <script>
@@ -112,6 +118,6 @@ fetch("/api/v1/register/checkpoints?limit=1").then(r => r.json()).then(d => {
   document.getElementById("s-cp").hidden = false;
 }).catch(function () {});
 </script>
-<script>fetch("/api/v1/register/self").then(function(r){return r.json()}).then(function(d){var n=d&&d.register&&d.register.name;if(!n)return;document.querySelectorAll(".masthead .title").forEach(function(e){e.textContent=n});document.title=document.title.replace("Register of Traceable Agents",n)}).catch(function(){})</script>
+<script>fetch("/api/v1/register/self").then(function(r){return r.json()}).then(function(d){var n=d&&d.register&&d.register.name;if(!n)return;document.querySelectorAll(".masthead .title").forEach(function(e){e.textContent=n});document.title=document.title.replace("Know Your Agent · the register of AI agents",n)}).catch(function(){})</script>
 </body>
 </html>
