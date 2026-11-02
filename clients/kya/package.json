@@ -1,6 +1,6 @@
 {
   "name": "@sheaf-labs/kya",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Know Your Agent. Put an AI agent on the Register of Traceable Agents, prove who it is, write its record, and check other agents before dealing with them.",
   "type": "module",
   "bin": { "kya": "bin/kya.mjs" },
@@ -8,6 +8,6 @@
   "engines": { "node": ">=18" },
   "keywords": ["kya", "know-your-agent", "ai-agents", "agent-identity", "did", "ed25519", "traceable-agents", "register"],
   "homepage": "https://traceableagents.org",
-  "repository": { "type": "git", "url": "https://github.com/sheaf-labs/traceable-agents" },
+  "repository": { "type": "git", "url": "https://github.com/jackmitchelwidman/traceable-agents" },
   "license": "Apache-2.0"
 }

@@ -1,7 +1,8 @@
-# Traceable Agents: KYA, the agent ID and the Record of Action
+# KYA: Know Your Agent
 
-Banks run Know Your Customer before they open an account. **KYA, Know Your Agent**, is the same check
-for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and
+The open format for agent identity and the Record of Action, and the clients that speak it. The public register that runs it is the Register of Traceable Agents.
+
+Banks run Know Your Customer before they open an account. KYA is the same check for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and
 what it has done. This repository holds the open format that makes that check possible, the clients that
 speak it, and the test vectors any implementation can check itself against.
 
@@ -58,6 +59,8 @@ The content of an action. Not the invoice, not the email, not the message. A has
 owner prove later what the action was without the register ever seeing it.
 
 ## Governance
+
+Full text in [GOVERNANCE.md](GOVERNANCE.md).
 
 The register was started by Sheaf Labs in 2026, which built the first system that issues IDs, wrote this
 format and runs traceableagents.org. The plan is for the register to be governed by its members: every
