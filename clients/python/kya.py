@@ -82,9 +82,9 @@ def cmd_join(a):
     k = Ed25519PrivateKey.generate()
     issued = now(); expires = (datetime.now(timezone.utc) + timedelta(days=365)).strftime("%Y-%m-%dT%H:%M:%SZ")
     d = {"v": 1, "type": "traceable-agent", "id": did(k), "owner": did(ok), "name": a.agent, "kind": a.kind, "environment": "test" if a.test else "production", "issuedAt": issued, "expiresAt": expires}
-    body = signed(ok, {"type": "traceable-join", "at": now(), "owner": {"id": did(ok), "name": o["name"], "website": o.get("website"), "listed": o.get("listed", True)}, "agent": {"descriptor": d, "ownerSignature": sig(ok, canonical(d).encode())}})
-    body["owner"] = {k2: v for k2, v in body["owner"].items() if v is not None}  # drop website:null before signing? No: sign what we send.
-    body = signed(ok, {k2: v for k2, v in body.items() if k2 != "signature"})
+    own = {"id": did(ok), "name": o["name"], "listed": o.get("listed", True)}
+    if o.get("website"): own["website"] = o["website"]
+    body = signed(ok, {"type": "traceable-join", "at": now(), "owner": own, "agent": {"descriptor": d, "ownerSignature": sig(ok, canonical(d).encode())}})
     r = post("/api/v1/register/join", body)
     save_key(kp, k); wj(os.path.join(HOME, "agents", a.agent + ".json"), {"id": d["id"], "fingerprint": fingerprint(k), "name": a.agent, "environment": d["environment"], "descriptor": d})
     print(f"{a.agent} is on the register.\nID:          {d['id']}\nFingerprint: {fingerprint(k)}\nLook it up:  {REGISTER}/a/{fingerprint(k)}")
