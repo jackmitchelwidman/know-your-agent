@@ -18,7 +18,7 @@
 </header>
 
 <h1>The format, version 1</h1>
-<p class="lede">Four things: an ID, a descriptor the owner signs, a receipt the agent signs, and a lookup anyone can call. Everything is plain JSON and standard cryptography, so a verifier can check a record without talking to this site.</p>
+<p class="lede">This is the KYA format; its home is <a href="https://know-your-agent.org">know-your-agent.org</a>. Four things: an ID, a descriptor the owner signs, a receipt the agent signs, and a lookup anyone can call. Everything is plain JSON and standard cryptography, so a verifier can check a record without talking to this site.</p>
 
 <h2>The ID</h2>
 <p>An agent's ID is its Ed25519 public key, written as a W3C <code>did:key</code>: the two multicodec bytes <code>0xed 0x01</code>, then the 32 key bytes, base58btc encoded with the multibase prefix <code>z</code>.</p>
@@ -116,7 +116,7 @@ POST https://traceableagents.org/api/v1/register/check
   <dt>Standing</dt><dd><code>POST /api/v1/register/entries/status</code> with <code>{verifier, at, agent, status, reason, signature}</code>, status <code>retired</code> or <code>revoked</code>.</dd>
   <dt>Who issued what</dt><dd><code>GET /api/v1/register/verifiers</code> lists the systems and whether the register has approved them, and how many owners have entered their own agents. Every lookup says which system issued the agent, or that the owner did.</dd>
 </dl>
-<p>A worked client in forty lines of Node, using only the built-in Ed25519, is at <a href="https://github.com/jackmitchelwidman/discursa/tree/main/register/verifier-example">register/verifier-example</a>. It registers a system, writes an owner and an agent, writes two receipts, and calls <code>/verify</code>.</p>
+<p>A worked client in forty lines of Node, using only the built-in Ed25519, is at <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/clients/examples/verifier.mjs">clients/examples/verifier.mjs</a> in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls <code>/verify</code>.</p>
 
 <h2 id="federation">Registers that talk to each other</h2>
 <p>Anyone may run a register from the published server. Registers that speak this format answer each other's lookups, so an agent entered on one can be checked from another. Each register publishes who it is and whom it asks:</p>
