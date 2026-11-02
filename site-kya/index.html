@@ -26,7 +26,7 @@ nav a{margin-right:18px;font-size:.95rem}
 <body>
 <div class="wrap">
 <header>
-  <nav><a href="https://traceableagents.org">The register</a><a href="https://github.com/jackmitchelwidman/traceable-agents">Code</a><a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/spec/format.md">The format</a><a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">Governance</a></nav>
+  <nav><a href="https://traceableagents.org">The register</a><a href="https://github.com/jackmitchelwidman/know-your-agent">Code</a><a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/spec/format.md">The format</a><a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">Governance</a></nav>
   <h1>KYA. Know Your Agent.<small>The open standard for AI agent identity and the Record of Action.</small></h1>
   <p class="lede">Banks run Know Your Customer before they open an account. KYA is the same check for AI agents. Before one agent deals with another, it asks who the other is, who stands behind it, and what it has done.</p>
 </header>
@@ -50,11 +50,11 @@ npx @sheaf-labs/kya join your-agent</code></pre>
 </div>
 
 <h2>Open, and nobody's</h2>
-<p>The format, the signed test vectors, the <code>kya</code> tool, a Python client and the register server are published under Apache-2.0 at <a href="https://github.com/jackmitchelwidman/traceable-agents">github.com/jackmitchelwidman/traceable-agents</a>. Anyone may run a register from it: <code>docker compose up</code>. Registers that speak the format answer each other's lookups, so an agent entered on one can be checked from another; each register re-checks the signatures itself and trusts no peer's word.</p>
-<p>The <a href="https://traceableagents.org">Register of Traceable Agents</a> is the first and canonical register. It was started by Sheaf Labs, which wrote the format and runs it today; the plan is a body of the register's members, in which every operator and every system that issues IDs has a seat. <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">How that works.</a></p>
+<p>The format, the signed test vectors, the <code>kya</code> tool, a Python client and the register server are published under Apache-2.0 at <a href="https://github.com/jackmitchelwidman/know-your-agent">github.com/jackmitchelwidman/know-your-agent</a>. Anyone may run a register from it: <code>docker compose up</code>. Registers that speak the format answer each other's lookups, so an agent entered on one can be checked from another; each register re-checks the signatures itself and trusts no peer's word.</p>
+<p>The <a href="https://traceableagents.org">Register of Traceable Agents</a> is the first and canonical register. It was started by Sheaf Labs, which wrote the format and runs it today; the plan is a body of the register's members, in which every operator and every system that issues IDs has a seat. <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">How that works.</a></p>
 
 <h2>Check your implementation</h2>
-<pre><code>git clone https://github.com/jackmitchelwidman/traceable-agents
+<pre><code>git clone https://github.com/jackmitchelwidman/know-your-agent
 node traceable-agents/spec/vectors/verify.mjs</code></pre>
 <p>Fixed keys and signed objects for every part of the format. An implementation that recomputes the same hashes and accepts and rejects the same signatures speaks KYA.</p>
 

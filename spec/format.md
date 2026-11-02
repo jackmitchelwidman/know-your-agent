@@ -153,7 +153,7 @@ Every write is one JSON body, signed by the writing system's key over the canoni
   - Who issued what  
     `GET /api/v1/register/verifiers` lists the systems and whether the register has approved them, and how many owners have entered their own agents. Every lookup says which system issued the agent, or that the owner did.
 
-A worked client in forty lines of Node, using only the built-in Ed25519, is at [clients/examples/verifier.mjs](https://github.com/jackmitchelwidman/traceable-agents/blob/main/clients/examples/verifier.mjs) in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls `/verify`.
+A worked client in forty lines of Node, using only the built-in Ed25519, is at [clients/examples/verifier.mjs](https://github.com/jackmitchelwidman/know-your-agent/blob/main/clients/examples/verifier.mjs) in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls `/verify`.
 
 ## Registers that talk to each other
 
@@ -168,7 +168,7 @@ Anyone may run a register from the published server. Registers that speak this f
   - What the answer says  
     Every answer carries `register:{url, name, id}`, the register that holds the entry. A forwarded answer also carries `federated:true`, `verifiedHere:true` and `askedBy`, the register you asked.
 
-The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its `self` and asking the existing operators to list it as a peer. How that is decided is in the [governance note](https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md).
+The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its `self` and asking the existing operators to list it as a peer. How that is decided is in the [governance note](https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md).
 
 ## Owner verification
 

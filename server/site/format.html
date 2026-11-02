@@ -116,7 +116,7 @@ POST https://traceableagents.org/api/v1/register/check
   <dt>Standing</dt><dd><code>POST /api/v1/register/entries/status</code> with <code>{verifier, at, agent, status, reason, signature}</code>, status <code>retired</code> or <code>revoked</code>.</dd>
   <dt>Who issued what</dt><dd><code>GET /api/v1/register/verifiers</code> lists the systems and whether the register has approved them, and how many owners have entered their own agents. Every lookup says which system issued the agent, or that the owner did.</dd>
 </dl>
-<p>A worked client in forty lines of Node, using only the built-in Ed25519, is at <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/clients/examples/verifier.mjs">clients/examples/verifier.mjs</a> in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls <code>/verify</code>.</p>
+<p>A worked client in forty lines of Node, using only the built-in Ed25519, is at <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/clients/examples/verifier.mjs">clients/examples/verifier.mjs</a> in the open repository, with the format as Markdown, JSON Schemas, signed test vectors and the register server itself. It registers a system, writes an owner and an agent, writes two receipts, and calls <code>/verify</code>.</p>
 
 <h2 id="federation">Registers that talk to each other</h2>
 <p>Anyone may run a register from the published server. Registers that speak this format answer each other's lookups, so an agent entered on one can be checked from another. Each register publishes who it is and whom it asks:</p>
@@ -126,7 +126,7 @@ POST https://traceableagents.org/api/v1/register/check
   <dt>Trust</dt><dd>A peer can report; it cannot vouch. This register uses a peer's answer only after it has re-checked, from the public keys inside the answer, that <code>ownerSignature</code> is the owner key's over the canonical descriptor and that <code>descriptor.owner</code> is that key. An answer that fails the check is treated as not found. The standing, counts and Record Score in a forwarded answer are the peer's report and are marked as such.</dd>
   <dt>What the answer says</dt><dd>Every answer carries <code>register:{url, name, id}</code>, the register that holds the entry. A forwarded answer also carries <code>federated:true</code>, <code>verifiedHere:true</code> and <code>askedBy</code>, the register you asked.</dd>
 </dl>
-<p>The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its <code>self</code> and asking the existing operators to list it as a peer. How that is decided is in the <a href="https://github.com/jackmitchelwidman/traceable-agents/blob/main/GOVERNANCE.md">governance note</a>.</p>
+<p>The register at traceableagents.org is the canonical one: the instance systems check by default. A second operator joins by publishing its <code>self</code> and asking the existing operators to list it as a peer. How that is decided is in the <a href="https://github.com/jackmitchelwidman/know-your-agent/blob/main/GOVERNANCE.md">governance note</a>.</p>
 
 <h2 id="verification">Owner verification</h2>
 <p>An owner is <b>verified</b> when it has proved control of a domain, or when the register's keeper has reviewed it. The proof of a domain is a token the register gives the owner, placed where only the domain's controller can put it:</p>

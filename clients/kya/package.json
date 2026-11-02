@@ -8,6 +8,6 @@
   "engines": { "node": ">=18" },
   "keywords": ["kya", "know-your-agent", "ai-agents", "agent-identity", "did", "ed25519", "traceable-agents", "register"],
   "homepage": "https://know-your-agent.org",
-  "repository": { "type": "git", "url": "https://github.com/jackmitchelwidman/traceable-agents" },
+  "repository": { "type": "git", "url": "https://github.com/jackmitchelwidman/know-your-agent" },
   "license": "Apache-2.0"
 }
