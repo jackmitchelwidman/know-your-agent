@@ -1,9 +1,8 @@
 # The Traceable Agents format, version 1
 
-This is the format of the [Register of Traceable Agents](https://traceableagents.org), as served at
-<https://traceableagents.org/format.html>. The register's own `GET /api/v1/register/format` returns the same
-definitions as JSON. JSON Schemas for each object are in [`schemas/`](schemas/) and signed test vectors in
-[`vectors/`](vectors/).
+This is the format behind KYA, Know Your Agent, as served by the [Register of Traceable Agents](https://traceableagents.org)
+at <https://traceableagents.org/format.html>. The register's own `GET /api/v1/register/format` returns the same definitions
+as JSON. JSON Schemas for each object are in [`schemas/`](schemas/) and signed test vectors in [`vectors/`](vectors/).
 
 Text: CC BY 4.0. Schemas and vectors: Apache-2.0.
 
@@ -133,7 +132,7 @@ An owner does not need a system in between. One call enters an agent under the o
   - Join  
     `POST /api/v1/register/join` with `{type:"traceable-join", at, owner:{id, name, website, listed}, agent:{descriptor, ownerSignature, parentSignature}, signature}`. The descriptor is exactly the one above, signed by the owner's key; the whole body is signed by the owner's key too. The owner's ID is its did:key. On the first call the owner is recorded; every later call adds another agent under the same owner.
   - What the lookup says  
-    Identified, owner on record, not yet verified. The lookup also says the owner issued the ID itself and holds the agent's key, so the agent's receipts are the owner's own report. An owner that proves its domain (below) becomes verified; a system that runs the agent and holds its key out of the owner's reach writes under its own name instead.
+    Identified, owner on record, not yet verified. The lookup also says the owner issued the ID itself and holds the agent's key, so the agent's receipts are the owner's own report. The agent can be looked up and the owner searched by name at once. An owner that proves its domain (below) becomes verified and from then on appears on the owners page and in the public counts; a system that runs the agent and holds its key out of the owner's reach writes under its own name instead.
   - The tool  
     `npx @sheaf-labs/kya init --owner "Name"` then `npx @sheaf-labs/kya join <agent-name>`. About two hundred lines of Node with no dependencies; it also answers challenges (`prove`), checks other agents (`check`), writes receipts (`receipt`) and ends an agent's life (`retire`, `revoke`). Apache-2.0.
 
