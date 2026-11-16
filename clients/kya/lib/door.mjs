@@ -89,6 +89,7 @@ export function checkRequestProof(proof, audience, { now = Date.now(), maxAgeSec
   *   approved   Agent IDs a person has approved: an array, a Set, or a function (id) => true/false (may be
   *              async). An approved agent comes in whatever `require` says, unless the register says it
   *              is revoked, retired or expired.
+  *   refused    Agent IDs a person has refused, in the same forms as `approved`. A refused agent stays out.
   *   onHold     If set, an agent with a valid proof that does not meet `require` is held instead of refused,
   *              and this function is called with the details so a person can decide. To let it in next
   *              time, add its ID to `approved`.
@@ -100,14 +101,15 @@ export function checkRequestProof(proof, audience, { now = Date.now(), maxAgeSec
   * Each proof works once: the door remembers the id and nonce of each proof it has let through the checks,
   * for 70 seconds. That memory is per process. Behind several processes, pass `seen` (has/add, may be
   * async) backed by a shared store. */
-export function door({ origin, require: req = "identified", approved, onHold, register = DEFAULT_REGISTER, lookupSeconds = 60, seen, fetch: fetchFn = globalThis.fetch, now = () => Date.now() } = {}) {
+export function door({ origin, require: req = "identified", approved, refused, onHold, register = DEFAULT_REGISTER, lookupSeconds = 60, seen, fetch: fetchFn = globalThis.fetch, now = () => Date.now() } = {}) {
   const base = canonicalAudience(origin);
   if (!base || !/^https?:\/\/[^/]+\/$/.test(base)) throw new Error('door({ origin }): set origin to this service\'s own address, for example "https://tools.acme.example".');
   if (!["identified", "verified", "proof"].includes(req)) throw new Error('door({ require }): "identified", "verified" or "proof".');
   const root = base.slice(0, -1), reg = String(register).replace(/\/$/, "");
   const used = new Map(), looked = new Map();
   const sweep = t => { for (const [k, exp] of used) if (exp <= t) used.delete(k); for (const [k, v] of looked) if (v.exp <= t) looked.delete(k); };
-  const isApproved = async id => !approved ? false : typeof approved === "function" ? !!(await approved(id)) : approved instanceof Set ? approved.has(id) : Array.isArray(approved) && approved.includes(id);
+  const inList = async (list, id) => !list ? false : typeof list === "function" ? !!(await list(id)) : list instanceof Set ? list.has(id) : Array.isArray(list) && list.includes(id);
+  const isApproved = id => inList(approved, id);
   const lookup = async id => {
     const t = now(), hit = looked.get(id);
     if (hit && hit.exp > t) return hit.value;
@@ -139,6 +141,7 @@ export function door({ origin, require: req = "identified", approved, onHold, re
     if (seen ? await seen.has(key) : used.has(key)) return { decision: "refuse", reason: "this proof was already used", id, audience };
     if (seen) await seen.add(key, MAX_AGE_SECONDS + AHEAD_SECONDS); else used.set(key, t + (MAX_AGE_SECONDS + AHEAD_SECONDS) * 1000);
 
+    if (await inList(refused, id)) return { decision: "refuse", reason: "a person refused this agent at this door", id, audience };
     const ok = await isApproved(id);
     if (req === "proof" && !ok) return { decision: "allow", reason: "its proof is valid", id, audience };
     const l = await lookup(id);
@@ -172,4 +175,42 @@ export function door({ origin, require: req = "identified", approved, onHold, re
     };
   }
   return { check, middleware, origin: root };
+}
+
+/** Approvals kept by a service outside this process, so a person can decide about held agents on a page.
+  *
+  *   door({ origin, require, ...approvals({ url, secret }) })
+  *
+  * `url` is the address of the approvals service and `secret` is this door's secret there. Both are yours to
+  * set; there is no default. The service answers two calls, each with "Authorization: Bearer <secret>":
+  *
+  *   GET  <url>/approved   -> { approved: [ids], refused: [ids] }
+  *   POST <url>/hold       { id, reason, path }   an agent was held; the service tells a person
+  *
+  * The lists are read at most every `refreshSeconds` (30 by default). If the service cannot be reached, the
+  * last lists read are used, and before any have been read nobody counts as approved. */
+export function approvals({ url, secret, refreshSeconds = 30, fetch: fetchFn = globalThis.fetch, now = () => Date.now() } = {}) {
+  if (!url || !secret) throw new Error("approvals({ url, secret }): the approvals service's address and this door's secret.");
+  const base = String(url).replace(/\/$/, ""), auth = { authorization: "Bearer " + secret };
+  let lists = { approved: new Set(), refused: new Set() }, readAt = -Infinity, reading = null;
+  const read = () => {
+    if (now() - readAt < refreshSeconds * 1000) return Promise.resolve(lists);
+    if (!reading) reading = (async () => {
+      try {
+        const r = await fetchFn(base + "/approved", { headers: auth });
+        const j = await r.json();
+        if (r.status === 200 && j && Array.isArray(j.approved)) lists = { approved: new Set(j.approved), refused: new Set(Array.isArray(j.refused) ? j.refused : []) };
+      } catch { /* keep the last lists read */ }
+      readAt = now(); reading = null; return lists;
+    })();
+    return reading;
+  };
+  return {
+    approved: async id => (await read()).approved.has(id),
+    refused: async id => (await read()).refused.has(id),
+    onHold: async held => {
+      let path = ""; try { path = new URL(held.audience).pathname; } catch { /* no path to report */ }
+      await fetchFn(base + "/hold", { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ id: held.id, reason: held.reason, path }) });
+    }
+  };
 }
