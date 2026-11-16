@@ -1,6 +1,6 @@
 {
   "name": "@sheaf-labs/kya",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Know Your Agent. Put an AI agent on the Know Your Agent register, prove who it is, write its record, check other agents before dealing with them, and check agents at the door of your own service.",
   "type": "module",
   "bin": {

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import { createServer } from "node:http";
-import { door, proofHeader, requestProof, checkRequestProof, canonicalAudience, decodeHeader, HEADER } from "../lib/door.mjs";
+import { door, approvals, proofHeader, requestProof, checkRequestProof, canonicalAudience, decodeHeader, HEADER } from "../lib/door.mjs";
 
 const key = () => generateKeyPairSync("ed25519").privateKey.export({ type: "pkcs8", format: "pem" });
 const ORIGIN = "https://tools.acme.example";
@@ -95,6 +95,38 @@ test("when the register cannot be reached the door refuses, except for approved 
   const go = d => d.check({ path: "/pay", headers: { [HEADER]: proofHeader(k, URL_PAY) } });
   assert.equal((await go(door({ origin: ORIGIN, fetch: reg }))).decision, "refuse");
   assert.equal((await go(door({ origin: ORIGIN, fetch: reg, approved: [idOf(k)] }))).decision, "allow");
+});
+
+test("a refused agent stays out, whatever the rule", async () => {
+  const k = key(), reg = registerOf({ [idOf(k)]: { verification: "verified" } });
+  const d = door({ origin: ORIGIN, require: "proof", fetch: reg, refused: [idOf(k)] });
+  const r = await d.check({ path: "/pay", headers: { [HEADER]: proofHeader(k, URL_PAY) } });
+  assert.equal(r.decision, "refuse"); assert.equal(r.reason, "a person refused this agent at this door");
+});
+
+test("approvals kept by an outside service: a hold is reported, and a person's decision is read back", async () => {
+  const k = key(), id = idOf(k), reg = registerOf({ [id]: {} });
+  const service = { approved: [], refused: [], holds: [], reads: 0, down: false };
+  const svc = async (url, opts = {}) => {
+    if (service.down) throw new Error("down");
+    if (opts.headers.authorization !== "Bearer s3cret") return { status: 401, json: async () => ({ ok: false }) };
+    if (String(url).endsWith("/approved")) { service.reads++; return { status: 200, json: async () => ({ ok: true, approved: service.approved, refused: service.refused }) }; }
+    service.holds.push(JSON.parse(opts.body)); return { status: 200, json: async () => ({ ok: true, status: "held" }) };
+  };
+  let t = 1_000_000;
+  const d = door({ origin: ORIGIN, require: "verified", fetch: reg, ...approvals({ url: "https://approvals.example/door/", secret: "s3cret", fetch: svc, now: () => t }) });
+  const go = () => d.check({ path: "/pay", headers: { [HEADER]: proofHeader(k, URL_PAY) } });
+  assert.equal((await go()).decision, "hold");
+  assert.deepEqual(service.holds, [{ id, reason: "its owner is not verified; held for a person to decide", path: "/pay" }]);
+  service.approved = [id];
+  assert.equal((await go()).decision, "hold");          // the lists are read again only after 30 seconds
+  t += 31_000;
+  assert.equal((await go()).decision, "allow");
+  service.down = true; t += 31_000;
+  assert.equal((await go()).decision, "allow");         // the last lists read still count
+  service.down = false; service.approved = []; service.refused = [id]; t += 31_000;
+  assert.equal((await go()).decision, "refuse");
+  assert.throws(() => approvals({ url: "https://approvals.example" }));
 });
 
 test("the origin is the service's own setting", () => {

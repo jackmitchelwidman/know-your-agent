@@ -75,6 +75,7 @@ const guard = door({
   origin: "https://tools.acme.example",   // this service's own public address
   require: "verified",                     // "identified" (the default), "verified" or "proof"
   approved: new Set(),                     // IDs a person has approved
+  refused: new Set(),                      // IDs a person has refused
   onHold: held => notifyAPerson(held)      // without this, an agent that falls short is refused
 });
 app.use(guard.middleware());               // a request that gets through carries req.kya.id
@@ -101,6 +102,24 @@ Three things to know:
 - **Each proof works once.** The door remembers the ID and random value of each proof for 70 seconds, in memory.
   If your service runs as several processes, pass `seen` with `has(key)` and `add(key, seconds)` backed
   by a store they share.
+
+**A page where a person decides.** `approved` and `onHold` can come from a service that keeps the list of
+held agents and shows it to a person:
+
+```js
+import { door, approvals } from "@sheaf-labs/kya";
+
+const guard = door({
+  origin: "https://tools.acme.example",
+  require: "verified",
+  ...approvals({ url: "https://approvals.example/door", secret: process.env.KYA_DOOR_SECRET })
+});
+```
+
+`approvals` needs the address of the service and this door's secret there. It has no default. The service
+answers two calls, each with `Authorization: Bearer <secret>`: `GET <url>/approved` gives
+`{ approved: [ids], refused: [ids] }`, and `POST <url>/hold` takes `{ id, reason, path }` when an agent is
+held. Anyone can run such a service. [TheGuardianAgent](https://theguardianagent.ai/door.html) is one.
 
 Without the middleware: `await guard.check({ path, headers })` answers
 `{ decision: "allow" | "hold" | "refuse", reason, id, agent, owner }`.
