@@ -108,18 +108,24 @@ object TraceableAgentsRoutes {
     implicit val checkDec: EntityDecoder[F, Json] = jsonOf[F, Json]
     def check(body: Json): F[Response[F]] = {
       val c = body.hcursor
-      val proof = c.downField("proof").focus.filter(_.isObject)
+      // The proof arrives as JSON, or as the KYA-Proof header value exactly as the request carried it.
+      val headerProof = c.get[String]("header").toOption.map(TraceableAgents.decodeRequestProofHeader)
+      val proof = c.downField("proof").focus.filter(_.isObject).orElse(headerProof.flatMap(_.toOption))
       val challenge = TraceableAgents.challengeOf(c)
+      val audience = c.get[String]("audience").toOption.map(_.trim).filter(_.nonEmpty)
       val id = c.get[String]("id").toOption.map(_.trim).filter(_.nonEmpty)
-      val checked: Either[String, String] = proof match {
-        case Some(pr) => TraceableAgents.checkProof(pr, challenge)
-        case None => id.toRight("send an id, or the proof the agent gave you")
+      val checked: Either[String, String] = (proof, headerProof) match {
+        case (Some(pr), _) => TraceableAgents.checkAnyProof(pr, challenge, audience)
+        case (None, Some(Left(why))) => Left(why)
+        case _ => id.toRight("send an id, or the proof the agent gave you")
       }
+      val proofType = proof.flatMap(_.hcursor.get[String]("type").toOption)
       val lookupId = checked.toOption.orElse(proof.flatMap(_.hcursor.get[String]("id").toOption)).orElse(id)
       lookupId match {
-        case None => fail(Status.BadRequest, "Send {id} or {proof, challenge}.")
+        case None => fail(Status.BadRequest, headerProof.flatMap(_.left.toOption).fold("Send {id} or {proof, challenge}.")(w => s"The KYA-Proof header could not be read: $w."))
         case Some(i) => lookupFed(i, local = false).flatMap { case (found, j) =>
           val pj = Json.obj("checked" -> proof.isDefined.asJson, "valid" -> (proof.isDefined && checked.isRight).asJson,
+            "type" -> proofType.asJson, "audienceChecked" -> (proof.isDefined && checked.isRight && audience.isDefined).asJson,
             "reason" -> (if (proof.isDefined) Some(checked.fold(identity, _ => "the proof is the agent's")) else None).asJson)
           val words = lk.plainWords(j) + (if (proof.isDefined) " Identity proof: " + checked.fold(r => s"NOT valid, $r.", _ => "valid.") else "")
           jsonResp(if (found) Status.Ok else Status.NotFound, j.deepMerge(Json.obj("identityProof" -> pj, "summary" -> words.asJson)))
@@ -318,7 +324,8 @@ object TraceableAgentsRoutes {
           "receipt" -> "sha256 of canonical [\"traceable-receipt\", id, seq, at, kind, decision, runId, actionHash, ledgerRowHash, prevHash], signed by the agent key; prevHash chains receipts, genesis is 64 zeros".asJson,
           "actionHash" -> "sha256(subject + \"\\n\" + input) kept by the owner; the register never holds the content".asJson,
           "lookup" -> "GET /api/v1/register/lookup?id=<did | fingerprint>".asJson,
-          "check" -> "POST /api/v1/register/check {id} or {proof, challenge}: the lookup plus identityProof {checked, valid, reason} and a plain summary".asJson,
+          "check" -> "POST /api/v1/register/check {id}, {proof, challenge, audience?} or {header, audience}: the lookup plus identityProof {checked, valid, reason, type, audienceChecked} and a plain summary. With audience, a proof that names anyone else is refused; a request proof always needs it".asJson,
+          "requestProof" -> "{v:1,type:'request-proof',id,audience,nonce,at} canonical JSON signed by the agent key (Ed25519, base64 in signature), sent as the KYA-Proof request header: the signed JSON, base64url without padding. audience is the address called: lower-case scheme and host, default port dropped, the path as sent, no query. nonce is a fresh random value. Good for 60 seconds, and only at that address".asJson,
           "recordOfAction" -> "GET /api/v1/register/agents/<id>/record: the Record of Action (counts, last 90 days, sub-agents, checks, proofs), the Record Score, the story in plain words, and a 30-day timeline".asJson,
           "recordScore" -> TraceableAgents.ScoreFormula.asJson,
           "proof" -> "{v:1,type:'traceable-proof',id,challenge,audience?,at} canonical JSON signed by the agent key (Ed25519, base64); the challenge is the fresh random value the counterparty sent (the field may also be named nonce, its older name); valid for 10 minutes; the agent's verifier signs it on the agent's behalf, so the runtime never holds the key".asJson,

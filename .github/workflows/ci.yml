@@ -11,6 +11,7 @@ jobs:
         with: { node-version: 20 }
       - run: node spec/vectors/verify.mjs
       - run: node clients/kya/bin/kya.mjs help > /dev/null
+      - run: node --test clients/kya/test/door.test.mjs
   server:
     runs-on: ubuntu-latest
     steps:

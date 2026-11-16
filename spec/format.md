@@ -91,7 +91,38 @@ Before agent A acts for or with agent B, two calls settle who B is and what its 
     POST https://know-your-agent.org/api/v1/register/check
     {"id": "<did or fingerprint>"}            (a lookup without a proof)
 
-The proof is `{v:1, type:"traceable-proof", id, challenge, audience?, at}` in canonical JSON, signed by the agent key (Ed25519, base64 in `signature`), good for ten minutes. The answer adds `identityProof` (`checked`, `valid`, `reason`) and a one-paragraph `summary` in plain words. What A does with the answer is A's own policy; a verifier that runs A records the check on A's record, so a counterparty check is itself an act the record shows.
+The proof is `{v:1, type:"traceable-proof", id, challenge, audience?, at}` in canonical JSON, signed by the agent key (Ed25519, base64 in `signature`), good for ten minutes. `audience` says who the proof is for, usually A's ID. When A sends `audience` with the check, a proof that names anyone else, or nobody, is refused, so a proof made for one checker cannot be shown to another. The answer adds `identityProof` (`checked`, `valid`, `reason`, `type`, `audienceChecked`) and a one-paragraph `summary` in plain words. What A does with the answer is A's own policy; a verifier that runs A records the check on A's record, so a counterparty check is itself an act the record shows.
+
+## The Door: an ID on an ordinary web request
+
+The handshake takes two messages. Most calls an agent makes are one plain web request to a service. For those, the agent shows its ID in one request header, and the service checks it before doing anything.
+
+    KYA-Proof: <the signed request proof as JSON, base64url without padding>
+
+The request proof is `{v:1, type:"request-proof", id, audience, nonce, at}` in canonical JSON, signed by the agent key (Ed25519, base64 in `signature`).
+
+-   `audience` is the address the request is made to, written one way: the scheme and host in lower case, a default port (80 for http, 443 for https) dropped, the path as it is sent on the wire, `/` for an empty path, and no query or fragment. A web client rewrites some paths before sending: it resolves `.` and `..` segments and percent-encodes characters such as spaces. The proof names the rewritten path. `HTTPS://Tools.Example.com:443/Pay?x=1` is written `https://tools.example.com/Pay`.
+-   `nonce` is a fresh random value, at least 16 characters, so no two proofs are the same.
+-   `at` is the time the proof was made.
+
+A service accepts a request proof when all of these hold:
+
+1.  `type` is `request-proof`. An answer to a challenge has the type `traceable-proof` inside what is signed, so it can never be used as a request proof, whatever audience it names.
+2.  `audience` equals the service's own address for this request. The service builds that address from its own settings and the path of the request. It must not take the host from the request, or a proof made for another service would pass.
+3.  `at` is no more than 60 seconds in the past and no more than 10 seconds ahead of the service's clock.
+4.  The signature is the key's in `id`. The key is inside the ID, so this needs no network call.
+5.  The service has not seen this proof before. It remembers the `id` and `nonce` of each proof for 70 seconds. It must not remember the signature text in their place: base64 can be written more than one way, so the same proof could come back looking different.
+
+Then the service looks the ID up on the register (`GET /api/v1/register/lookup?id=…`) to learn the owner, the standing and the record, and applies its own rule: let the agent in, refuse it, or hold the request for a person. A service refuses with status 401 and the header `WWW-Authenticate: KYA-Proof`.
+
+A service that cannot check signatures itself can post the header to the register with its own address:
+
+    POST https://know-your-agent.org/api/v1/register/check
+    {"header": "<the KYA-Proof value>", "audience": "https://tools.example.com/pay"}
+
+The answer is the lookup with `identityProof`. The register does not remember proofs it has seen, so check 5 stays with the service.
+
+An agent that runs on a verifier never holds its key. The verifier adds the header itself, with the audience taken from the address really being called, and must never sign a request proof for an address somebody else supplied.
 
 ## The Record of Action and the Record Score
 

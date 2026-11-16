@@ -6,7 +6,9 @@ Needs Python 3.9+ and the `cryptography` package (pip install cryptography). Not
   python kya.py init --owner "Name"           make an owner key in ~/.config/kya-py
   python kya.py join <agent> [--test]          make an agent key, sign its ID as owner, enter it
   python kya.py prove <agent> <challenge>      answer a challenge with this agent's key
-  python kya.py check <id> [--proof JSON --challenge C]
+  python kya.py check <id> [--proof JSON --challenge C] [--audience WHO]
+  python kya.py header <agent> <url>          the KYA-Proof header for one request to <url>
+  python kya.py check --header VALUE --audience URL
   python kya.py receipt <agent> --kind K --decision D [--action TEXT]
   python kya.py whoami
 
@@ -93,8 +95,33 @@ def cmd_prove(a):
     k, meta = agent(a.agent)
     print(json.dumps(signed(k, {"v": 1, "type": "traceable-proof", "id": meta["id"], "challenge": a.challenge, "audience": a.audience, "at": now()})))
 
+def audience_of(url: str):
+    """The one written form of an address: lower-case scheme and host, default port dropped, no query.
+    The path must be the one your HTTP client sends: pass it already percent-encoded and without . or .. segments."""
+    import re
+    m = re.match(r"^([A-Za-z][A-Za-z0-9+.-]*)://([^/?#]*)([^?#]*)", url.strip())
+    if not m or m.group(1).lower() not in ("http", "https") or not m.group(2) or "@" in m.group(2): return None
+    scheme, host = m.group(1).lower(), m.group(2).lower()
+    pm = re.match(r"^(.*):(\d+)$", host)
+    if pm: host = pm.group(1) if int(pm.group(2)) == (443 if scheme == "https" else 80) else f"{pm.group(1)}:{int(pm.group(2))}"
+    return f"{scheme}://{host}{m.group(3) or '/'}"
+
+def proof_header(k, agent_id: str, url: str) -> str:
+    """The KYA-Proof header for one request to url: good for 60 seconds and only at that address."""
+    aud = audience_of(url)
+    if not aud: sys.exit("The address must be a full http or https URL.")
+    p = signed(k, {"v": 1, "type": "request-proof", "id": agent_id, "audience": aud, "nonce": os.urandom(16).hex(), "at": now()})
+    return base64.urlsafe_b64encode(json.dumps(p).encode()).decode().rstrip("=")
+
+def cmd_header(a):
+    k, meta = agent(a.agent)
+    print(proof_header(k, meta["id"], a.url))
+
 def cmd_check(a):
-    r = post("/api/v1/register/check", {"proof": json.loads(a.proof), "challenge": a.challenge} if a.proof else {"id": a.id})
+    if a.header:
+        r = post("/api/v1/register/check", {"header": a.header, "audience": audience_of(a.audience or "")})
+    else:
+        r = post("/api/v1/register/check", {"proof": json.loads(a.proof), "challenge": a.challenge, **({"audience": a.audience} if a.audience else {})} if a.proof else {"id": a.id})
     print(r.get("summary") or r.get("answer") or json.dumps(r, indent=2))
 
 def cmd_receipt(a):
@@ -119,7 +146,8 @@ if __name__ == "__main__":
     s = sub.add_parser("init"); s.add_argument("--owner", required=True); s.add_argument("--website"); s.add_argument("--hidden", action="store_true"); s.set_defaults(f=cmd_init)
     s = sub.add_parser("join"); s.add_argument("agent"); s.add_argument("--kind", default="agent"); s.add_argument("--test", action="store_true"); s.set_defaults(f=cmd_join)
     s = sub.add_parser("prove"); s.add_argument("agent"); s.add_argument("challenge"); s.add_argument("--audience"); s.set_defaults(f=cmd_prove)
-    s = sub.add_parser("check"); s.add_argument("id"); s.add_argument("--proof"); s.add_argument("--challenge"); s.set_defaults(f=cmd_check)
+    s = sub.add_parser("check"); s.add_argument("id", nargs="?"); s.add_argument("--proof"); s.add_argument("--challenge"); s.add_argument("--audience"); s.add_argument("--header"); s.set_defaults(f=cmd_check)
+    s = sub.add_parser("header"); s.add_argument("agent"); s.add_argument("url"); s.set_defaults(f=cmd_header)
     s = sub.add_parser("receipt"); s.add_argument("agent"); s.add_argument("--kind", required=True); s.add_argument("--decision", required=True); s.add_argument("--action"); s.add_argument("--run"); s.set_defaults(f=cmd_receipt)
     s = sub.add_parser("whoami"); s.set_defaults(f=cmd_whoami)
     a = P.parse_args(); a.f(a)

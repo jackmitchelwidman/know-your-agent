@@ -48,6 +48,15 @@ const proof = signedBody(agent, proofBody);
 const forged = { ...proof, challenge: "00000000000000000000000000000000" };           // signature no longer covers the body
 const strangers = signedBody(stranger, { ...proofBody, id: agent.did });              // signed by another key, claims the agent's id
 
+// A request proof: sent as the KYA-Proof header with an ordinary web request.
+const requestAudience = "https://tools.example.com/pay";
+const requestBody = { v: 1, type: "request-proof", id: agent.did, audience: requestAudience, nonce: "a1b2c3d4e5f60718293a4b5c6d7e8f90", at: "2026-11-16T10:05:00Z" };
+const requestValid = signedBody(agent, requestBody);
+const requestMoved = { ...requestValid, audience: "https://other.example.com/pay" };   // signature no longer covers the body
+const answerAsRequest = { ...signedBody(agent, { v: 1, type: "traceable-proof", id: agent.did, challenge: requestBody.nonce, audience: requestAudience, at: requestBody.at }), type: "request-proof", nonce: requestBody.nonce };
+delete answerAsRequest.challenge;
+const audiences = [["HTTPS://Tools.Example.com:443/Pay?x=1#frag", "https://tools.example.com/Pay"], ["http://localhost:8080", "http://localhost:8080/"], ["http://example.com:80/a/", "http://example.com/a/"], ["https://example.com/a%20b", "https://example.com/a%20b"], ["ftp://example.com/a", null]];
+
 const leaf = sha256(Buffer.from(canonical(["traceable-checkpoint-leaf", agent.did, 3, prev]), "utf8")).toString("hex");
 const root = sha256(Buffer.concat([Buffer.from(leaf, "hex"), Buffer.from(leaf, "hex")])).toString("hex"); // one leaf: paired with itself
 const statement = { v: 1, type: "traceable-checkpoint", at: "2026-11-02T11:00:00Z", agents: 1, receipts: 3, root, prevRoot: null };
@@ -62,6 +71,11 @@ const out = {
   childDescriptor: { object: childDescriptor, canonical: canonical(childDescriptor), ownerSignature: signB64(owner, childBytes), parentSignature: signB64(agent, childBytes) },
   receipts: { genesis: GENESIS, chain: receipts, headSeq: 3, headHash: prev },
   proofs: { challenge, valid: proof, forgedChallenge: { proof: forged, expect: "invalid: signature does not cover this body" }, strangersKey: { proof: strangers, expect: "invalid: signed by a key other than the id's" } },
+  requestProofs: { header: "KYA-Proof", audience: requestAudience, valid: requestValid, headerValue: Buffer.from(JSON.stringify(requestValid), "utf8").toString("base64url"),
+    checks: [{ at: "2026-11-16T10:05:30Z", audience: requestAudience, expect: "valid" }, { at: "2026-11-16T10:06:01Z", audience: requestAudience, expect: "invalid: older than 60 seconds" }, { at: "2026-11-16T10:04:49Z", audience: requestAudience, expect: "invalid: dated more than 10 seconds ahead" }, { at: "2026-11-16T10:05:30Z", audience: "https://tools.example.com/refund", expect: "invalid: made for another address" }],
+    movedAudience: { proof: requestMoved, expect: "invalid: signature does not cover this body" },
+    challengeAnswerRelabelled: { proof: answerAsRequest, expect: "invalid: a challenge answer signed as traceable-proof is not a request proof" },
+    canonicalAudience: audiences.map(([from, to]) => ({ from, to })) },
   checkpoint: { leaf, root, statement, statementCanonical: canonical(statement), statementHash: sha256(Buffer.from(canonical(statement), "utf8")).toString("hex") },
   join,
   recordScore: { formula: "100, less 30 x (held / actions), less 50 x (rejected / actions), less 10 if rejected in the last 90 days, less 10 if fewer than 20 actions; kept between 0 and 100; no score before the first action",

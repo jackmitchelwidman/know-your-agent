@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://know-your-agent.org/schemas/v1/request-proof.json",
+  "title": "Request proof (v1)",
+  "description": "What an agent sends with an ordinary web request to show who it is: the KYA-Proof header holds this object as JSON, base64url without padding. Canonical JSON of the body without signature, signed by the agent key. Good for 60 seconds, and only at the address in audience.",
+  "type": "object",
+  "required": [
+    "v",
+    "type",
+    "id",
+    "audience",
+    "nonce",
+    "at",
+    "signature"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "v": {
+      "const": 1
+    },
+    "type": {
+      "const": "request-proof"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+      "description": "An Ed25519 public key as a W3C did:key (multicodec 0xed01, base58btc, multibase z)."
+    },
+    "audience": {
+      "type": "string",
+      "pattern": "^https?://[^/?#]+/[^?#]*$",
+      "description": "The address the request is made to: lower-case scheme and host, default port dropped, the path as sent on the wire, no query or fragment."
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 200,
+      "description": "A fresh random value, so two proofs are never the same."
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC."
+    },
+    "signature": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Ed25519 signature, base64."
+    }
+  }
+}

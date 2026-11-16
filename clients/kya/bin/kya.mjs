@@ -9,6 +9,7 @@ import { generateKeyPairSync, createPrivateKey, sign, createHash, randomBytes } 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, chmodSync } from "node:fs";
 import { join as pathJoin } from "node:path";
 import { homedir } from "node:os";
+import { proofHeader, requestProof, canonicalAudience } from "../lib/door.mjs";
 
 const REGISTER = (process.env.KYA_REGISTER || "https://know-your-agent.org").replace(/\/$/, "");
 const HOME = process.env.KYA_HOME || pathJoin(process.env.XDG_CONFIG_HOME || pathJoin(homedir(), ".config"), "kya");
@@ -70,8 +71,14 @@ const HELP = `kya: Know Your Agent. The Know Your Agent from the command line.
         Your owner ID and the agents you have entered.
   kya prove <agent> <challenge> [--audience <did>]
         Answer another agent's challenge: a proof signed with this agent's key, as JSON.
-  kya check <id or fingerprint> [--proof '<json>' --challenge <c>]
+  kya check <id or fingerprint> [--proof '<json>' --challenge <c>] [--audience <who>]
         Look another agent up. With a proof and the challenge you sent, also checks the proof is theirs.
+        With --audience, a proof made for anyone else is refused.
+  kya header <agent> <url> [--json]
+        The KYA-Proof header for one request to <url>: the agent's signed proof, good for 60 seconds and
+        only at that address. Send it as the request header "KYA-Proof".
+  kya check --header <value> --audience <url>
+        Check a KYA-Proof header a request carried. The audience is your own address for that request.
   kya challenge
         A fresh random challenge to send to another agent.
   kya receipt <agent> --kind <kind> --decision <decision> [--action "<text>"] [--run <id>]
@@ -150,14 +157,25 @@ async function prove() {
   out(signed(a.key, proof));
 }
 
+async function header() {
+  const a = agent(safeName(rest[0]));
+  const url = rest[1];
+  if (!url || !canonicalAudience(url)) die("kya header <agent> <url>: the full http or https address the request goes to.");
+  out(flags.json ? requestProof(a.key, url) : proofHeader(a.key, url));
+}
+
 async function check() {
   const id = rest[0];
-  if (!id) die("kya check <id or fingerprint>");
   let r;
-  if (flags.proof) {
+  if (flags.header) {
+    const audience = canonicalAudience(String(flags.audience || ""));
+    if (!audience) die("--audience is your own address for the request, as a full http or https URL.");
+    r = await post("/api/v1/register/check", { header: String(flags.header), audience });
+  } else if (!id) die("kya check <id or fingerprint>");
+  else if (flags.proof) {
     let proof; try { proof = JSON.parse(flags.proof); } catch { die("--proof must be the proof JSON exactly as the other agent gave it."); }
     if (!flags.challenge) die("--challenge is the value you sent; the register checks the proof is over it.");
-    r = await post("/api/v1/register/check", { proof, challenge: flags.challenge });
+    r = await post("/api/v1/register/check", { proof, challenge: flags.challenge, audience: flags.audience ? String(flags.audience) : undefined });
   } else {
     r = await post("/api/v1/register/check", { id });
   }
@@ -222,7 +240,7 @@ async function record() {
   if (flags.json) out(j);
 }
 
-const run = { init, join, whoami, prove, check, challenge, receipt, record, verify, "verify-check": verifyCheck, retire: () => standing("retired"), revoke: () => standing("revoked") };
+const run = { init, join, whoami, prove, header, check, challenge, receipt, record, verify, "verify-check": verifyCheck, retire: () => standing("retired"), revoke: () => standing("revoked") };
 if (!cmd || cmd === "help" || flags.help) { out(HELP); process.exit(0); }
 if (!run[cmd]) die(`Unknown command "${cmd}".\n\n${HELP}`);
 run[cmd]().catch(e => die(e && e.message ? e.message : String(e)));
