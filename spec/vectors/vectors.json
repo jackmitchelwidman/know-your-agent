@@ -139,6 +139,88 @@
       "expect": "invalid: signed by a key other than the id's"
     }
   },
+  "requestProofs": {
+    "header": "KYA-Proof",
+    "audience": "https://tools.example.com/pay",
+    "valid": {
+      "v": 1,
+      "type": "request-proof",
+      "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+      "audience": "https://tools.example.com/pay",
+      "nonce": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+      "at": "2026-11-16T10:05:00Z",
+      "signature": "K85CCm8IvKWQNqG7wdfOR3aLwF18iqzEvRaqdumE1f3o5GdHItjRUZdHzEqg1MiUwhTnjJ1Y0zqbhnklGcP+Cw=="
+    },
+    "headerValue": "eyJ2IjoxLCJ0eXBlIjoicmVxdWVzdC1wcm9vZiIsImlkIjoiZGlkOmtleTp6Nk1rbkdjM29jSHMzemRQaUpibmFhcURpNThOR2I0cGsxU3A5V3hXdWZ1WFNkeGYiLCJhdWRpZW5jZSI6Imh0dHBzOi8vdG9vbHMuZXhhbXBsZS5jb20vcGF5Iiwibm9uY2UiOiJhMWIyYzNkNGU1ZjYwNzE4MjkzYTRiNWM2ZDdlOGY5MCIsImF0IjoiMjAyNi0xMS0xNlQxMDowNTowMFoiLCJzaWduYXR1cmUiOiJLODVDQ204SXZLV1FOcUc3d2RmT1IzYUx3RjE4aXF6RXZSYXFkdW1FMWYzbzVHZEhJdGpSVVpkSHpFcWcxTWlVd2hUbmpKMVkwenFiaG5rbEdjUCtDdz09In0",
+    "checks": [
+      {
+        "at": "2026-11-16T10:05:30Z",
+        "audience": "https://tools.example.com/pay",
+        "expect": "valid"
+      },
+      {
+        "at": "2026-11-16T10:06:01Z",
+        "audience": "https://tools.example.com/pay",
+        "expect": "invalid: older than 60 seconds"
+      },
+      {
+        "at": "2026-11-16T10:04:49Z",
+        "audience": "https://tools.example.com/pay",
+        "expect": "invalid: dated more than 10 seconds ahead"
+      },
+      {
+        "at": "2026-11-16T10:05:30Z",
+        "audience": "https://tools.example.com/refund",
+        "expect": "invalid: made for another address"
+      }
+    ],
+    "movedAudience": {
+      "proof": {
+        "v": 1,
+        "type": "request-proof",
+        "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        "audience": "https://other.example.com/pay",
+        "nonce": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+        "at": "2026-11-16T10:05:00Z",
+        "signature": "K85CCm8IvKWQNqG7wdfOR3aLwF18iqzEvRaqdumE1f3o5GdHItjRUZdHzEqg1MiUwhTnjJ1Y0zqbhnklGcP+Cw=="
+      },
+      "expect": "invalid: signature does not cover this body"
+    },
+    "challengeAnswerRelabelled": {
+      "proof": {
+        "v": 1,
+        "type": "request-proof",
+        "id": "did:key:z6MknGc3ocHs3zdPiJbnaaqDi58NGb4pk1Sp9WxWufuXSdxf",
+        "audience": "https://tools.example.com/pay",
+        "at": "2026-11-16T10:05:00Z",
+        "signature": "qFP5k71q4dajNLWD7h5jo6uKlhOxKvBNldoF94Zo/Oszaelx53fOe1wTLK/C/5cRgyE/Bwrv9L63QMwnXVr8AA==",
+        "nonce": "a1b2c3d4e5f60718293a4b5c6d7e8f90"
+      },
+      "expect": "invalid: a challenge answer signed as traceable-proof is not a request proof"
+    },
+    "canonicalAudience": [
+      {
+        "from": "HTTPS://Tools.Example.com:443/Pay?x=1#frag",
+        "to": "https://tools.example.com/Pay"
+      },
+      {
+        "from": "http://localhost:8080",
+        "to": "http://localhost:8080/"
+      },
+      {
+        "from": "http://example.com:80/a/",
+        "to": "http://example.com/a/"
+      },
+      {
+        "from": "https://example.com/a%20b",
+        "to": "https://example.com/a%20b"
+      },
+      {
+        "from": "ftp://example.com/a",
+        "to": null
+      }
+    ]
+  },
   "checkpoint": {
     "leaf": "889723b1a4706a4600842fcbb25a21752a7dbff02ec9d8d0c891900b55c14f19",
     "root": "e78e2091f27bdf5efbb798dedfc055b5c7cba9ba42f0cac4fd90ac4f02b094a5",

@@ -94,10 +94,12 @@ object TraceableAgents {
 
   /** Check a proof a counterparty presented. Right(did) when the signature is the key's, the challenge is the
     * one we issued (when we issued one), and it is fresh. The reasons are plain words for the agent. */
-  def checkProof(proof: Json, expectedChallenge: Option[String], nowMillis: Long = System.currentTimeMillis(), maxAgeSeconds: Long = 600): Either[String, String] = {
+  def checkProof(proof: Json, expectedChallenge: Option[String], nowMillis: Long = System.currentTimeMillis(), maxAgeSeconds: Long = 600,
+                 expectedAudience: Option[String] = None): Either[String, String] = {
     val c = proof.hcursor
     val field = if (c.downField(ChallengeField).succeeded) ChallengeField else LegacyChallengeField
     for {
+      _     <- if (c.get[String]("type").toOption.contains("request-proof")) Left("this is a request proof, which answers no challenge") else Right(())
       did   <- c.get[String]("id").left.map(_ => "the proof names no id")
       chal  <- c.get[String](field).left.map(_ => "the proof has no challenge")
       at    <- c.get[String]("at").left.map(_ => "the proof has no time")
@@ -105,12 +107,90 @@ object TraceableAgents {
       aud    = c.get[Option[String]]("audience").toOption.flatten
       pk    <- publicKeyOf(did).toRight("the id is not a did:key this register understands")
       _     <- expectedChallenge.filter(_ != chal).fold[Either[String, Unit]](Right(()))(_ => Left("the challenge is not the one you issued"))
+      _     <- audienceMatches(expectedAudience, aud)
       atMs  <- scala.util.Try(java.time.Instant.parse(at).toEpochMilli).toEither.left.map(_ => "the time is not readable")
       _     <- if (math.abs(nowMillis - atMs) > maxAgeSeconds * 1000) Left("the proof is stale") else Right(())
       ok     = scala.util.Try(verify(pk, canonicalBytes(proofDoc(did, chal, aud, at, field)), unb64(sig))).getOrElse(false)
       _     <- if (ok) Right(()) else Left("the signature does not match the id")
     } yield did
   }
+
+  /** When the checker says who the proof must be for, the proof has to name exactly that. A proof that
+    * names nobody, or somebody else, is refused: it could have been made for another checker and replayed here. */
+  private def audienceMatches(expected: Option[String], named: Option[String]): Either[String, Unit] = expected match {
+    case None => Right(())
+    case Some(e) => named match {
+      case Some(n) if n == e => Right(())
+      case Some(_) => Left("the proof was made for someone else")
+      case None => Left("the proof does not say who it is for")
+    }
+  }
+
+  /** A request proof: what an agent sends with an ordinary web request, in the KYA-Proof header, to show
+    * who it is. Nobody challenged it, so it carries its own random value, the exact address it is calling,
+    * and the time. It has its own signed type, so a challenge answer ("traceable-proof") can never be passed
+    * off as one, whatever audience it names. */
+  val RequestProofType = "request-proof"
+  val RequestProofHeader = "KYA-Proof"
+  val RequestProofMaxAgeSeconds = 60L
+  /** How far ahead of the checker's clock a proof's time may be. */
+  val RequestProofAheadSeconds = 10L
+
+  def requestProofDoc(agentDid: String, audience: String, nonce: String, at: String): Json =
+    Json.obj("v" -> Json.fromInt(1), "type" -> Json.fromString(RequestProofType), "id" -> Json.fromString(agentDid),
+      "audience" -> Json.fromString(audience), "nonce" -> Json.fromString(nonce), "at" -> Json.fromString(at))
+
+  /** The one written form of an address a request proof is bound to: scheme, host and path. The scheme and
+    * host are lower case, a default port (80 for http, 443 for https) is dropped, an empty path is "/", and
+    * the query and fragment are left out. The path is kept exactly as sent. */
+  def canonicalAudience(url: String): Option[String] =
+    scala.util.Try(new java.net.URI(url.trim)).toOption.flatMap { u =>
+      for {
+        scheme <- Option(u.getScheme).map(_.toLowerCase).filter(s => s == "http" || s == "https")
+        host   <- Option(u.getHost).map(_.toLowerCase).filter(_.nonEmpty)
+      } yield {
+        val port = u.getPort
+        val dflt = if (scheme == "https") 443 else 80
+        val portPart = if (port == -1 || port == dflt) "" else s":$port"
+        val path = Option(u.getRawPath).filter(_.nonEmpty).getOrElse("/")
+        s"$scheme://$host$portPart$path"
+      }
+    }
+
+  /** The header value is the signed proof as JSON, base64url without padding. */
+  def decodeRequestProofHeader(value: String): Either[String, Json] =
+    scala.util.Try(new String(java.util.Base64.getUrlDecoder.decode(value.trim), "UTF-8")).toEither.left.map(_ => "the header is not base64url")
+      .flatMap(t => io.circe.parser.parse(t).left.map(_ => "the header does not hold JSON")).filterOrElse(_.isObject, "the header does not hold a proof")
+
+  /** Check a request proof. `expectedAudience` is the checker's own address for this request, built from its
+    * own configuration (never from the request's Host header), in the canonical form. Right(did) when the
+    * signature is the key's, the proof is for exactly that address, and it is fresh. A checker that wants a
+    * proof to work once keeps the signatures it has seen for the proof's lifetime. */
+  def checkRequestProof(proof: Json, expectedAudience: String, nowMillis: Long = System.currentTimeMillis(),
+                        maxAgeSeconds: Long = RequestProofMaxAgeSeconds, aheadSeconds: Long = RequestProofAheadSeconds): Either[String, String] = {
+    val c = proof.hcursor
+    for {
+      _     <- c.get[String]("type").toOption.filter(_ == RequestProofType).toRight("this is not a request proof")
+      did   <- c.get[String]("id").left.map(_ => "the proof names no id")
+      aud   <- c.get[String]("audience").left.map(_ => "the proof does not say who it is for")
+      nonce <- c.get[String]("nonce").left.map(_ => "the proof has no random value")
+      at    <- c.get[String]("at").left.map(_ => "the proof has no time")
+      sig   <- c.get[String]("signature").left.map(_ => "the proof has no signature")
+      pk    <- publicKeyOf(did).toRight("the id is not a did:key this register understands")
+      _     <- if (aud == expectedAudience) Right(()) else Left("the proof was made for another address")
+      atMs  <- scala.util.Try(java.time.Instant.parse(at).toEpochMilli).toEither.left.map(_ => "the time is not readable")
+      _     <- if (nowMillis - atMs > maxAgeSeconds * 1000) Left("the proof is stale") else Right(())
+      _     <- if (atMs - nowMillis > aheadSeconds * 1000) Left("the proof is dated in the future") else Right(())
+      ok     = scala.util.Try(verify(pk, canonicalBytes(requestProofDoc(did, aud, nonce, at)), unb64(sig))).getOrElse(false)
+      _     <- if (ok) Right(()) else Left("the signature does not match the id")
+    } yield did
+  }
+
+  /** Either kind of proof, as a checker sends it to the register. A request proof needs the audience. */
+  def checkAnyProof(proof: Json, challenge: Option[String], audience: Option[String], nowMillis: Long = System.currentTimeMillis()): Either[String, String] =
+    if (proof.hcursor.get[String]("type").toOption.contains(RequestProofType))
+      audience.toRight("send the audience: the address the request was made to").flatMap(a => checkRequestProof(proof, a, nowMillis))
+    else checkProof(proof, challenge, nowMillis, expectedAudience = audience)
 
   /** The descriptor an owner signs. Canonical JSON, so the signature is checkable anywhere. */
   def descriptor(agentDid: String, ownerDid: String, name: String, kind: String, issuedAt: String, expiresAt: String,

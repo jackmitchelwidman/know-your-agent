@@ -5,6 +5,7 @@ Before one agent deals with another, it asks who the other is, who stands behind
 
 `kya` puts an agent on the [Know Your Agent](https://know-your-agent.org) in one command,
 lets it prove who it is, writes its record, and checks other agents before dealing with them.
+It also gives a service a door: a check on every agent that calls it.
 
 It needs Node 18 or later and nothing else. Keys are made on your machine and never leave it.
 The register only ever sees public keys and signatures.
@@ -45,6 +46,64 @@ kya check 9c21e0a7b4d3f815 --proof '<the JSON B returned>' --challenge 3f9a…
 
 The answer is one of three: identified with a verified owner, identified with an owner on record, or
 unknown. What A does with each answer is A's own policy.
+
+## The Door
+
+A service checks each agent that calls it. The agent adds one header to its request. The service lets it
+in, refuses it, or holds it for a person.
+
+**The agent's side.** One line:
+
+```js
+import { proofHeader } from "@sheaf-labs/kya";
+import { readFileSync } from "node:fs";
+
+const key = readFileSync(process.env.HOME + "/.config/kya/agents/invoice-payer.key");
+const url = "https://tools.acme.example/pay";
+await fetch(url, { method: "POST", headers: { "KYA-Proof": proofHeader(key, url) }, body });
+```
+
+The header is a proof signed with the agent's key. It names the exact address being called and is good
+for 60 seconds. It works once. From a shell: `kya header invoice-payer https://tools.acme.example/pay`.
+
+**The service's side.** Works with Node's http server, Express and Connect:
+
+```js
+import { door } from "@sheaf-labs/kya";
+
+const guard = door({
+  origin: "https://tools.acme.example",   // this service's own public address
+  require: "verified",                     // "identified" (the default), "verified" or "proof"
+  approved: new Set(),                     // IDs a person has approved
+  onHold: held => notifyAPerson(held)      // without this, an agent that falls short is refused
+});
+app.use(guard.middleware());               // a request that gets through carries req.kya.id
+```
+
+| `require` | Who comes in |
+|---|---|
+| `identified` | An agent on the register and in good standing. |
+| `verified` | The same, and its owner has proved a domain or been reviewed. |
+| `proof` | Any agent with a valid proof. The register is not asked. |
+
+An agent with a valid proof that falls short of `require` is held when `onHold` is set: the request gets
+status 403 and your function gets the agent's ID, its owner and the reason. To let it in next time, add
+its ID to `approved`. A revoked, retired or expired agent is refused even when approved. With no header,
+a wrong address, an old proof or a used one, the request gets 401.
+
+Three things to know:
+
+- **Set `origin` yourself.** The door never reads the host from the request. That is what stops a proof
+  made for another service from working at yours.
+- **The signature is checked on your machine.** The register is asked only who owns the agent and whether
+  it is in good standing, at most once a minute for each agent. If the register cannot be reached, the
+  door refuses everyone except approved agents.
+- **Each proof works once.** The door remembers the proofs it has seen for their 70 seconds, in memory.
+  If your service runs as several processes, pass `seen` with `has(key)` and `add(key, seconds)` backed
+  by a store they share.
+
+Without the middleware: `await guard.check({ path, headers })` answers
+`{ decision: "allow" | "hold" | "refuse", reason, id, agent, owner }`.
 
 ## The record
 

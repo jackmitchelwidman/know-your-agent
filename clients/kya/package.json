@@ -1,13 +1,39 @@
 {
   "name": "@sheaf-labs/kya",
-  "version": "0.3.1",
-  "description": "Know Your Agent. Put an AI agent on the Know Your Agent register, prove who it is, write its record, and check other agents before dealing with them.",
+  "version": "0.4.0",
+  "description": "Know Your Agent. Put an AI agent on the Know Your Agent register, prove who it is, write its record, check other agents before dealing with them, and check agents at the door of your own service.",
   "type": "module",
-  "bin": { "kya": "bin/kya.mjs" },
-  "files": ["bin", "README.md", "LICENSE"],
-  "engines": { "node": ">=18" },
-  "keywords": ["kya", "know-your-agent", "ai-agents", "agent-identity", "did", "ed25519", "traceable-agents", "register"],
+  "bin": {
+    "kya": "bin/kya.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "kya",
+    "know-your-agent",
+    "ai-agents",
+    "agent-identity",
+    "did",
+    "ed25519",
+    "traceable-agents",
+    "register"
+  ],
   "homepage": "https://know-your-agent.org",
-  "repository": { "type": "git", "url": "https://github.com/jackmitchelwidman/know-your-agent" },
-  "license": "Apache-2.0"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackmitchelwidman/know-your-agent"
+  },
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./lib/door.mjs",
+    "./door": "./lib/door.mjs"
+  },
+  "main": "lib/door.mjs"
 }
