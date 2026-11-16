@@ -101,7 +101,7 @@ The handshake takes two messages. Most calls an agent makes are one plain web re
 
 The request proof is `{v:1, type:"request-proof", id, audience, nonce, at}` in canonical JSON, signed by the agent key (Ed25519, base64 in `signature`).
 
--   `audience` is the address the request is made to, written one way: the scheme and host in lower case, a default port (80 for http, 443 for https) dropped, the path exactly as sent, `/` for an empty path, and no query or fragment. `HTTPS://Tools.Example.com:443/Pay?x=1` is written `https://tools.example.com/Pay`.
+-   `audience` is the address the request is made to, written one way: the scheme and host in lower case, a default port (80 for http, 443 for https) dropped, the path as it is sent on the wire, `/` for an empty path, and no query or fragment. A web client rewrites some paths before sending: it resolves `.` and `..` segments and percent-encodes characters such as spaces. The proof names the rewritten path. `HTTPS://Tools.Example.com:443/Pay?x=1` is written `https://tools.example.com/Pay`.
 -   `nonce` is a fresh random value, at least 16 characters, so no two proofs are the same.
 -   `at` is the time the proof was made.
 
@@ -111,7 +111,7 @@ A service accepts a request proof when all of these hold:
 2.  `audience` equals the service's own address for this request. The service builds that address from its own settings and the path of the request. It must not take the host from the request, or a proof made for another service would pass.
 3.  `at` is no more than 60 seconds in the past and no more than 10 seconds ahead of the service's clock.
 4.  The signature is the key's in `id`. The key is inside the ID, so this needs no network call.
-5.  The service has not seen this proof before. It remembers each signature for 70 seconds.
+5.  The service has not seen this proof before. It remembers the `id` and `nonce` of each proof for 70 seconds. It must not remember the signature text in their place: base64 can be written more than one way, so the same proof could come back looking different.
 
 Then the service looks the ID up on the register (`GET /api/v1/register/lookup?id=…`) to learn the owner, the standing and the record, and applies its own rule: let the agent in, refuse it, or hold the request for a person. A service refuses with status 401 and the header `WWW-Authenticate: KYA-Proof`.
 

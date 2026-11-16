@@ -45,6 +45,11 @@ test("the door lets in an agent on the register and refuses one with no header, 
   assert.equal(first.decision, "allow"); assert.equal(first.id, idOf(k));
   const again = await d.check({ path: "/pay", headers: { "KYA-Proof": h } });
   assert.equal(again.decision, "refuse"); assert.equal(again.reason, "this proof was already used");
+  // the same proof with its signature written another way is still the same proof
+  const p2 = requestProof(k, URL_PAY), enc = o => Buffer.from(JSON.stringify(o)).toString("base64url");
+  assert.equal((await d.check({ path: "/pay", headers: { [HEADER]: enc(p2) } })).decision, "allow");
+  for (const sig of [p2.signature.replace(/=+$/, ""), p2.signature.replace(/\+/g, "-").replace(/\//g, "_"), p2.signature + "\n"])
+    assert.equal((await d.check({ path: "/pay", headers: { [HEADER]: enc({ ...p2, signature: sig }) } })).reason, "this proof was already used");
   const elsewhere = await d.check({ path: "/refund", headers: { [HEADER]: proofHeader(k, URL_PAY) } });
   assert.equal(elsewhere.reason, "the proof was made for another address");
   // a proof made for another service is refused whatever Host the request claims
@@ -53,6 +58,15 @@ test("the door lets in an agent on the register and refuses one with no header, 
   // the register is asked once a minute for one agent
   await d.check({ path: "/pay", headers: { [HEADER]: proofHeader(k, URL_PAY) } });
   assert.equal(reg.calls.length, 1);
+});
+
+test("the proof names the path the client really sends", async () => {
+  const k = key(), d = door({ origin: ORIGIN, fetch: registerOf({ [idOf(k)]: {} }) });
+  assert.equal(canonicalAudience(ORIGIN + "/a/../pay"), URL_PAY);
+  assert.equal(canonicalAudience(ORIGIN + "/caf\u00e9 bar"), ORIGIN + "/caf%C3%A9%20bar");
+  assert.equal(canonicalAudience("https://user:pw@tools.acme.example/pay"), null);
+  // fetch sends /a/../pay as /pay, and the proof says /pay
+  assert.equal((await d.check({ path: new URL(ORIGIN + "/a/../pay").pathname, headers: { [HEADER]: proofHeader(k, ORIGIN + "/a/../pay") } })).decision, "allow");
 });
 
 test("unknown, unverified and revoked agents; approval; holding", async () => {

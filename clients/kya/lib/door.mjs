@@ -32,18 +32,13 @@ const didOfKey = priv => "did:key:z" + b58(Buffer.concat([Buffer.from([0xed, 0x0
 
 /** The one written form of an address a proof is bound to: scheme, host and path. The scheme and host are
   * lower case, a default port is dropped, an empty path is "/", and the query and fragment are left out.
-  * The path is kept exactly as sent. Returns null when the address is not http or https. */
+  * The path is the one a web client sends: "." and ".." segments are resolved and characters that cannot
+  * travel in a path are percent-encoded, exactly as fetch does. Returns null when the address is not http
+  * or https. */
 export function canonicalAudience(url) {
-  const m = /^([A-Za-z][A-Za-z0-9+.-]*):\/\/([^/?#]*)([^?#]*)/.exec(String(url).trim());
-  if (!m) return null;
-  const scheme = m[1].toLowerCase();
-  if (scheme !== "http" && scheme !== "https") return null;
-  let authority = m[2].toLowerCase();
-  if (!authority || authority.includes("@")) return null;
-  const pm = /^(.*):(\d+)$/.exec(authority);
-  if (pm) { const dflt = scheme === "https" ? "443" : "80"; authority = String(Number(pm[2])) === dflt ? pm[1] : pm[1] + ":" + Number(pm[2]); }
-  if (!authority) return null;
-  return scheme + "://" + authority + (m[3] || "/");
+  let u; try { u = new URL(String(url).trim()); } catch { return null; }
+  if ((u.protocol !== "http:" && u.protocol !== "https:") || !u.host || u.username || u.password) return null;
+  return u.protocol + "//" + u.host + u.pathname;
 }
 
 // ── the agent's side ────────────────────────────────────────────────────────────────────────
@@ -102,8 +97,9 @@ export function checkRequestProof(proof, audience, { now = Date.now(), maxAgeSec
   * door.check({ path, headers }) answers { decision: "allow" | "hold" | "refuse", reason, id, agent, owner }.
   * door.middleware() is the same check for Node's http server, Express and Connect.
   *
-  * Each proof works once: the door remembers the proofs it has seen for their 60 seconds. That memory is
-  * per process. Behind several processes, pass `seen` (has/add, may be async) backed by a shared store. */
+  * Each proof works once: the door remembers the id and nonce of each proof it has let through the checks,
+  * for 70 seconds. That memory is per process. Behind several processes, pass `seen` (has/add, may be
+  * async) backed by a shared store. */
 export function door({ origin, require: req = "identified", approved, onHold, register = DEFAULT_REGISTER, lookupSeconds = 60, seen, fetch: fetchFn = globalThis.fetch, now = () => Date.now() } = {}) {
   const base = canonicalAudience(origin);
   if (!base || !/^https?:\/\/[^/]+\/$/.test(base)) throw new Error('door({ origin }): set origin to this service\'s own address, for example "https://tools.acme.example".');
@@ -137,7 +133,9 @@ export function door({ origin, require: req = "identified", approved, onHold, re
     const c = checkRequestProof(proof, audience, { now: t });
     if (!c.ok) return { decision: "refuse", reason: c.reason, id: typeof proof.id === "string" ? proof.id : undefined, audience };
     sweep(t);
-    const id = c.id, key = proof.signature;
+    // Remembered by the signed id and nonce. The signature text is no use for this: base64 can be written
+    // more than one way, so the same proof could be sent again looking different.
+    const id = c.id, key = id + "\n" + proof.nonce;
     if (seen ? await seen.has(key) : used.has(key)) return { decision: "refuse", reason: "this proof was already used", id, audience };
     if (seen) await seen.add(key, MAX_AGE_SECONDS + AHEAD_SECONDS); else used.set(key, t + (MAX_AGE_SECONDS + AHEAD_SECONDS) * 1000);
 

@@ -98,7 +98,7 @@ Three things to know:
 - **The signature is checked on your machine.** The register is asked only who owns the agent and whether
   it is in good standing, at most once a minute for each agent. If the register cannot be reached, the
   door refuses everyone except approved agents.
-- **Each proof works once.** The door remembers the proofs it has seen for their 70 seconds, in memory.
+- **Each proof works once.** The door remembers the ID and random value of each proof for 70 seconds, in memory.
   If your service runs as several processes, pass `seen` with `has(key)` and `add(key, seconds)` backed
   by a store they share.
 

@@ -29,7 +29,7 @@
     "audience": {
       "type": "string",
       "pattern": "^https?://[^/?#]+/[^?#]*$",
-      "description": "The address the request is made to: lower-case scheme and host, default port dropped, the path exactly as sent, no query or fragment."
+      "description": "The address the request is made to: lower-case scheme and host, default port dropped, the path as sent on the wire, no query or fragment."
     },
     "nonce": {
       "type": "string",

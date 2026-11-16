@@ -96,7 +96,8 @@ def cmd_prove(a):
     print(json.dumps(signed(k, {"v": 1, "type": "traceable-proof", "id": meta["id"], "challenge": a.challenge, "audience": a.audience, "at": now()})))
 
 def audience_of(url: str):
-    """The one written form of an address: lower-case scheme and host, default port dropped, path as sent, no query."""
+    """The one written form of an address: lower-case scheme and host, default port dropped, no query.
+    The path must be the one your HTTP client sends: pass it already percent-encoded and without . or .. segments."""
     import re
     m = re.match(r"^([A-Za-z][A-Za-z0-9+.-]*)://([^/?#]*)([^?#]*)", url.strip())
     if not m or m.group(1).lower() not in ("http", "https") or not m.group(2) or "@" in m.group(2): return None
